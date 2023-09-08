@@ -5,7 +5,7 @@ Esta extensión para Google Chrome te permite visualizar de manera sencilla el p
 # 🛠️ Instalación
 Es un proceso sencillo que implica cargar la extensión en Google Chrome desde una carpeta local en tu computadora:
 
-1. Descargar la extensión https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension/releases
+1. Descargar la extensión y extraerla en una carpeta https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension/releases
 
 2. Abrir la página de **Extensiones** [chrome://extensions/](chrome://extensions/)
 
@@ -31,7 +31,7 @@ El cálculo de los promedios se realiza basado en la siguiente documentación:
 https://documentacion.siu.edu.ar/wiki/SIU-Guarani/Version3.21.0/Glosario_de_conceptos/Promedio
 
 # 💡 Contribuciones
-Este proyecto es de código abierto, y está abiertos a contribuciones de la comunidad. Si deseas mejorar la extensión o informar problemas, por favor visita el [repositorio en github](https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension).
+Este proyecto es de código abierto, y está abierto a contribuciones de la comunidad. Si deseas mejorar la extensión o informar problemas, por favor visita el [repositorio en github](https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension).
 
 # ❗Notas
 - Esta extensión no almacena ni comparte tus datos personales ni tu historial académico. Solo se utiliza para mostrar información en tiempo real mientras navegas en SIU Guaraní.
