@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "SIU Guaraní UNLP Promedio",
+  "version": "1.0",
+  "description": "Visualizar de manera sencilla el promedio de tus calificaciones en la Historia Académica de SIU Guaraní de la UNLP.",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://autogestion.guarani.unlp.edu.ar/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
