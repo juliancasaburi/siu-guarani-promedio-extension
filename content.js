@@ -1,6 +1,6 @@
 // Define regular expressions to match scores
-const averageWithoutFailsRegex = /(\d+) \(([^)]+)\) Aprobado/g;
-const averageWithFailsRegex = /(\d+) \(([^)]+)\) Desaprobado/g;
+const averageWithoutFailsRegex = /(\d+) \(([^)]+)\) (Aprobado|Promocionado)/g;
+const averageWithFailsRegex = /(\d+) \(([^)]+)\) (Desaprobado|Reprobado)/g;
 
 // Create a MutationObserver to watch for changes in the "kernel_contenido" div
 const kernelContenido = document.getElementById("kernel_contenido");
