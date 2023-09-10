@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
   "name": "SIU Guaraní UNLP Promedio",
-  "version": "1.0",
+  "version": "1.1",
+  "homepage_url": "https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension",
   "description": "Visualizar de manera sencilla el promedio de tus calificaciones en la Historia Académica de SIU Guaraní de la UNLP.",
+  "author": {
+    "email": "juliancasaburi@gmail.com"
+  },
   "permissions": [
     "activeTab",
     "storage"
