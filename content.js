@@ -2,48 +2,97 @@
 const averageWithoutFailsRegex = /(\d+) \(([^)]+)\) Aprobado/g;
 const averageWithFailsRegex = /(\d+) \(([^)]+)\) Desaprobado/g;
 
+// Create a MutationObserver to watch for changes in the "kernel_contenido" div
+const kernelContenido = document.getElementById("kernel_contenido");
+const observer = new MutationObserver(handleKernelContenidoChange);
+if (kernelContenido) {
+  observer.observe(kernelContenido, { childList: true, subtree: true });
+
+  // Also, check if the "catedras" elements are already present when the page loads
+  let catedras = document.getElementsByClassName("catedras");
+  if (catedras.length > 0) {
+    extractAndCalculateScores();
+  }
+}
+
 // Initialize score arrays
-const scoresWithoutFails = [];
-const scoresWithFails = [];
+let scoresWithoutFails = [];
+let scoresWithFails = [];
 
 // Function to extract and calculate exam scores
 function extractAndCalculateScores() {
-  // Extract scores from the page content
-  extractScoresWithoutFails(document.body.innerText, averageWithoutFailsRegex, scoresWithoutFails);
-  extractScoresWithFails(document.body.innerText, averageWithFailsRegex, scoresWithFails);
+  // Extract passed exams from the page content
+  extractScores(document.body.innerText, averageWithoutFailsRegex, scoresWithoutFails);
+
+  // Copy the content of scoresWithoutFails to scoresWithFails and add the failed exams
+  scoresWithFails = [...scoresWithoutFails];
+  extractScores(document.body.innerText, averageWithFailsRegex, scoresWithFails);
 
   // Calculate the average scores
   const averageWithoutFails = calculateAverage(scoresWithoutFails);
   const averageWithFails = calculateAverage(scoresWithFails);
 
-  // Update or create the averageDivs
+  // Create a new div element
+  var averagesDiv = document.createElement("div");
+
+  // Set the id attribute
+  averagesDiv.id = "averagesDiv";
+
+  // Set the inline styles for the new div
+  averagesDiv.className = "titulo_operacion";
+  averagesDiv.style.backgroundColor = "#f1f0f5"; // White background
+  averagesDiv.style.border = "4px";
+  averagesDiv.style.borderRadius = "24px";
+  averagesDiv.style.padding = "20px 20px";
+  averagesDiv.style.margin = "20px 20px";
+  averagesDiv.style.textAlign = "center";
+
+  // Create a new h2 element for the title
+  var titleElement = document.createElement("h2");
+
+  // Create an anchor element
+  var linkElement = document.createElement("a");
+  linkElement.href = "https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension/";
+
+  // Set the text content for the anchor element (the title)
+  linkElement.textContent = "Extensión SIU Guaraní UNLP Promedio";
+
+  // Apply an inline style to the h2 element
+  titleElement.style.fontWeight = "bold"; // Example: Making it bold
+
+  // Append the anchor element to the title element
+  titleElement.appendChild(linkElement);
+
+  // Append the title element to the averagesDiv
+  averagesDiv.appendChild(titleElement);
+
+  // Get the div with id "listado"
+  var listadoDiv = document.getElementById("listado");
+
+  // Get the parent of the "listadoDiv" div
+  var parentOfListadoDiv = listadoDiv.parentElement;
+
+  // Insert the new div before the "listadoDiv" div
+  observer.disconnect();
+  parentOfListadoDiv.insertBefore(averagesDiv, listadoDiv);
+
   updateOrCreateAverageDiv("averageWithoutFailsDiv", "Promedio sin aplazos: ", averageWithoutFails, "teal");
   updateOrCreateAverageDiv("averageWithFailsDiv", "Promedio con aplazos: ", averageWithFails, "firebrick");
 
   // Save both average scores
   chrome.storage.local.set({ 'averageWithoutFails': averageWithoutFails });
   chrome.storage.local.set({ 'averageWithFails': averageWithFails });
+
+  observer.observe(document.getElementById("kernel_contenido"), { childList: true, subtree: true });
 }
 
-// Function to extract scores with fails from the page content and store them in the specified array
-function extractScoresWithFails(content, regex, scoresArray) {
+// Function to extract scores from the page content and store them in the specified array
+function extractScores(content, regex, scoresArray) {
   const matches = content.match(regex);
   if (matches) {
     for (const match of matches) {
       const score = parseInt(match.match(/\d+/)[0]);
       scoresArray.push(score);
-    }
-  }
-}
-
-// Function to extract scores without fails from the page content and store them in the specified array
-function extractScoresWithoutFails(content, regex, scoresArray) {
-  const matches = content.match(regex);
-  if (matches) {
-    for (const match of matches) {
-      const score = parseInt(match.match(/\d+/)[0]);
-      scoresArray.push(score);
-      scoresWithFails.push(score);
     }
   }
 }
@@ -67,7 +116,8 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
 
     // Create an h3 element with the class "titulo-corte" and set its text content
     const h3Element = document.createElement("h3");
-    h3Element.textContent = prefix + average.toFixed(2) + " [Extensión SIU Guaraní UNLP Promedio]";
+    h3Element.style.display = "inline";
+    h3Element.textContent = prefix + average.toFixed(2);
 
     h3Element.classList.add("titulo-corte");
 
@@ -79,27 +129,21 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
     // Append the h3 element to the newAverageDiv
     averageDiv.appendChild(h3Element);
 
-    // Find the div with ID "listado"
-    const listadoDiv = document.getElementById("listado");
+    // Find the div with ID "averagesDiv"
+    const averagesDiv = document.getElementById("averagesDiv");
 
-    // Insert the new average div before the "listado" div
-    if (listadoDiv) {
-      listadoDiv.parentNode.insertBefore(averageDiv, listadoDiv);
+    // Append the new "averageDiv" to "averagesDiv"
+    if (averagesDiv) {
+      averagesDiv.appendChild(averageDiv);
     }
   }
 }
 
 // Function to be called when the "kernel_contenido" div changes
 function handleKernelContenidoChange(mutationsList, observer) {
+  // check if the "catedras" elements are present
   let catedras = document.getElementsByClassName("catedras");
   if (catedras.length > 0) {
     extractAndCalculateScores();
   }
-}
-
-// Create a MutationObserver to watch for changes in the "kernel_contenido" div
-const kernelContenido = document.getElementById("kernel_contenido");
-if (kernelContenido) {
-  const observer = new MutationObserver(handleKernelContenidoChange);
-  observer.observe(kernelContenido, { childList: true, subtree: true });
 }

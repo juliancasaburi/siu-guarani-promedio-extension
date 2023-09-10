@@ -2,71 +2,92 @@
 
 /* Default light theme styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  
-  .popup-container {
-    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    text-align: center;
-  }
-  
-  h1 {
-    color: #333;
-    font-size: 24px;
-    margin: 0;
-  }
-  
-  h2 {
-    color: #666;
-    font-size: 18px;
-    margin: 10px 0;
-  }
-  
-  a {
-    color: #0078D4;
-    text-decoration: none;
-  }
-  
-  a:hover {
-    text-decoration: underline;
-  }
-  
-  .github-link {
-    margin-top: 20px;
-    font-size: 18px;
-    padding: 10px;
-  }
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f5f5f5; /* Light gray background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Style the container */
+.popup-container {
+  font-family: 'Roboto', sans-serif;
+  background-color: #ffffff; /* White background */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  padding: 20px;
+  text-align: center;
+}
+
+/* Style the h1 */
+.popup-container h1 {
+  color: #333; /* Dark gray text */
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+/* Style the h2 elements */
+.popup-container h2 {
+  font-size: 18px;
+  color: #666; /* Gray text */
+  margin-top: 10px;
+  border-radius: 10px; /* Rounded background */
+  padding: 8px 12px; /* Padding inside the rounded background */
+  background-color: #f3f3f3; /* Background color for h2 elements */
+  color: #000000; /* Text color inside the rounded background */
+}
+
+/* Style the GitHub link */
+.github-link {
+  margin-top: 20px;
+}
+
+.github-link a {
+  color: #0078D4; /* Blue link color */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.github-link a:hover {
+  color: #0056b3; /* Darker blue on hover */
+}
+
+/* Icon styles (Font Awesome) */
+.github-link i {
+  font-size: 24px;
+  margin-right: 8px;
+  color: #0078D4; /* Blue icon color */
+}
 
 /* Dark theme styles when dark mode is enabled */
 @media (prefers-color-scheme: dark) {
   body {
-      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark background */
+    background-color: #0f0f0f; /* Dark background */
   }
 
   .popup-container {
-      background-color: rgba(0, 0, 0, 0.9); /* Semi-transparent dark background */
-      color: #fff; /* White text color for dark theme */
+    background-color: #0f0f0f; /* Dark background for the container */
+    color: #fff; /* White text color */
   }
 
-  h1 {
-      color: #fff; /* White text color for dark theme */
+  .popup-container h1 {
+    color: #ddd; /* Light gray text color in dark mode */
   }
 
-  h2 {
-      color: #ccc; /* Light gray text color for dark theme */
+  .popup-container h2 {
+    font-size: 18px;
+    color: #ccc; /* Light gray text color in dark theme */
+    margin-top: 10px;
+    border-radius: 10px; /* Rounded background for dark theme */
+    padding: 8px 12px; /* Padding inside the rounded background in dark theme */
+    background-color: #242323; /* Background color for h2 elements in dark theme */
+    color: #ccc; /* Text color inside the rounded background in dark theme */
   }
 
-  a {
-      color: #1E90FF; /* Light blue link color for dark theme */
+  .github-link a {
+    color: #1E90FF; /* Light blue link color in dark mode */
   }
 }
-  
