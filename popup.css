@@ -1,5 +1,6 @@
 /* CSS for popup.html */
 
+/* Default light theme styles */
 body {
     font-family: Arial, sans-serif;
     background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
@@ -13,7 +14,6 @@ body {
   
   .popup-container {
     background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
-    border-radius: 15px; /* Rounded corners */
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     padding: 20px;
     text-align: center;
@@ -45,4 +45,28 @@ body {
     font-size: 18px;
     padding: 10px;
   }
+
+/* Dark theme styles when dark mode is enabled */
+@media (prefers-color-scheme: dark) {
+  body {
+      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark background */
+  }
+
+  .popup-container {
+      background-color: rgba(0, 0, 0, 0.9); /* Semi-transparent dark background */
+      color: #fff; /* White text color for dark theme */
+  }
+
+  h1 {
+      color: #fff; /* White text color for dark theme */
+  }
+
+  h2 {
+      color: #ccc; /* Light gray text color for dark theme */
+  }
+
+  a {
+      color: #1E90FF; /* Light blue link color for dark theme */
+  }
+}
   
