@@ -1,6 +1,6 @@
 // Define regular expressions to match scores
-const averageWithoutFailsRegex = /(\d+) \(([^)]+)\) (Aprobado|Promocionado)/g;
-const averageWithFailsRegex = /(\d+) \(([^)]+)\) (Desaprobado|Reprobado)/g;
+const averageScoreWithoutFailsRegex = /(\d+) \(([^)]+)\) (Aprobado|Promocionado)/g;
+const averageScoreWithFailsRegex = /(\d+) \(([^)]+)\) (Desaprobado|Reprobado)/g;
 
 // Create a MutationObserver to watch for changes in the "kernel_contenido" div
 const kernelContenido = document.getElementById("kernel_contenido");
@@ -22,66 +22,70 @@ let scoresWithFails = [];
 // Function to extract and calculate exam scores
 function extractAndCalculateScores() {
   // Extract passed exams from the page content
-  extractScores(document.body.innerText, averageWithoutFailsRegex, scoresWithoutFails);
+  extractScores(document.body.innerText, averageScoreWithoutFailsRegex, scoresWithoutFails);
 
   // Copy the content of scoresWithoutFails to scoresWithFails and add the failed exams
   scoresWithFails = [...scoresWithoutFails];
-  extractScores(document.body.innerText, averageWithFailsRegex, scoresWithFails);
+  extractScores(document.body.innerText, averageScoreWithFailsRegex, scoresWithFails);
 
   // Calculate the average scores
-  const averageWithoutFails = calculateAverage(scoresWithoutFails);
-  const averageWithFails = calculateAverage(scoresWithFails);
+  const averageScoreWithoutFails = calculateAverage(scoresWithoutFails);
+  const averageScoreWithFails = calculateAverage(scoresWithFails);
 
-  // Create a new div element
-  var averagesDiv = document.createElement("div");
+  // Check if the element with id "averagesDiv" doesn't exist
+  if (!document.getElementById("averagesDiv")) {
+    // Create a new div element
+    var averagesDiv = document.createElement("div");
 
-  // Set the id attribute
-  averagesDiv.id = "averagesDiv";
+    // Set the id attribute
+    averagesDiv.id = "averagesDiv";
 
-  // Set the inline styles for the new div
-  averagesDiv.className = "titulo_operacion";
-  averagesDiv.style.backgroundColor = "#f1f0f5"; // White background
-  averagesDiv.style.border = "4px";
-  averagesDiv.style.borderRadius = "24px";
-  averagesDiv.style.padding = "20px 20px";
-  averagesDiv.style.margin = "20px 20px";
-  averagesDiv.style.textAlign = "center";
+    // Set the inline styles for the new div
+    averagesDiv.className = "titulo_operacion";
+    averagesDiv.style.backgroundColor = "#f1f0f5"; // White background
+    averagesDiv.style.border = "4px";
+    averagesDiv.style.borderRadius = "24px";
+    averagesDiv.style.padding = "20px 20px";
+    averagesDiv.style.margin = "20px 20px";
+    averagesDiv.style.textAlign = "center";
 
-  // Create a new h2 element for the title
-  var titleElement = document.createElement("h2");
+    // Create a new h2 element for the title
+    var titleElement = document.createElement("h2");
 
-  // Create an anchor element
-  var linkElement = document.createElement("a");
-  linkElement.href = "https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension/";
+    // Create an anchor element
+    var linkElement = document.createElement("a");
+    linkElement.href = "https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension/";
 
-  // Set the text content for the anchor element (the title)
-  linkElement.textContent = "Extensión SIU Guaraní UNLP Promedio";
+    // Set the text content for the anchor element (the title)
+    linkElement.textContent = "Extensión SIU Guaraní UNLP Promedio";
 
-  // Apply an inline style to the h2 element
-  titleElement.style.fontWeight = "bold"; // Example: Making it bold
+    // Apply an inline style to the h2 element
+    titleElement.style.fontWeight = "bold";
 
-  // Append the anchor element to the title element
-  titleElement.appendChild(linkElement);
+    // Append the anchor element to the title element
+    titleElement.appendChild(linkElement);
 
-  // Append the title element to the averagesDiv
-  averagesDiv.appendChild(titleElement);
+    // Append the title element to the averagesDiv
+    averagesDiv.appendChild(titleElement);
 
-  // Get the div with id "listado"
-  var listadoDiv = document.getElementById("listado");
+    // Get the div with id "listado"
+    var listadoDiv = document.getElementById("listado");
 
-  // Get the parent of the "listadoDiv" div
-  var parentOfListadoDiv = listadoDiv.parentElement;
+    // Get the parent of the "listadoDiv" div
+    var parentOfListadoDiv = listadoDiv.parentElement;
 
-  // Insert the new div before the "listadoDiv" div
-  observer.disconnect();
-  parentOfListadoDiv.insertBefore(averagesDiv, listadoDiv);
+    // Insert the new div before the "listadoDiv" div
+    observer.disconnect();
+    parentOfListadoDiv.insertBefore(averagesDiv, listadoDiv);
+  }
 
-  updateOrCreateAverageDiv("averageWithoutFailsDiv", "Promedio sin aplazos: ", averageWithoutFails, "teal");
-  updateOrCreateAverageDiv("averageWithFailsDiv", "Promedio con aplazos: ", averageWithFails, "firebrick");
+  // Create divs and append them to averagesDiv
+  updateOrCreateAverageDiv("averageWithoutFailsDiv", "Promedio sin aplazos: ", averageScoreWithoutFails, "teal");
+  updateOrCreateAverageDiv("averageWithFailsDiv", "Promedio con aplazos: ", averageScoreWithFails, "firebrick");
 
   // Save both average scores
-  chrome.storage.local.set({ 'averageWithoutFails': averageWithoutFails });
-  chrome.storage.local.set({ 'averageWithFails': averageWithFails });
+  chrome.storage.local.set({ 'averageScoreWithoutFails': averageScoreWithoutFails });
+  chrome.storage.local.set({ 'averageScoreWithFails': averageScoreWithFails });
 
   observer.observe(document.getElementById("kernel_contenido"), { childList: true, subtree: true });
 }
@@ -140,7 +144,7 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
 }
 
 // Function to be called when the "kernel_contenido" div changes
-function handleKernelContenidoChange(mutationsList, observer) {
+function handleKernelContenidoChange() {
   // check if the "catedras" elements are present
   let catedras = document.getElementsByClassName("catedras");
   if (catedras.length > 0) {
