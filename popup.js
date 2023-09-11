@@ -32,6 +32,17 @@ document.addEventListener("DOMContentLoaded", function () {
   var link = document.getElementById("instructions");
   link.addEventListener("click", function (event) {
     event.preventDefault();
-    window.open("https://autogestion.guarani.unlp.edu.ar/historia_academica", "_blank");
+
+    // Get the active tab in the current window
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      // Extract the URL from the tab object
+      const currentUrl = tabs[0].url;
+
+      // Create the new URL
+      const newUrl = currentUrl.replace(/\/+$/, '').replace(/\/[^/]*$/, '') + "/historia_academica";
+
+      // Navigate to the new URL
+      chrome.tabs.update({ url: newUrl });
+    });
   });
 });
