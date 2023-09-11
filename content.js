@@ -54,10 +54,10 @@ function extractAndCalculateScores() {
 
     // Create an anchor element
     var linkElement = document.createElement("a");
-    linkElement.href = "https://github.com/juliancasaburi/siu-guarani-unlp-promedio-extension/";
+    linkElement.href = "https://github.com/juliancasaburi/siu-guarani-promedio-extension/";
 
     // Set the text content for the anchor element (the title)
-    linkElement.textContent = "Extensión SIU Guaraní UNLP Promedio";
+    linkElement.textContent = "Extensión SIU Guaraní Promedio";
 
     // Apply an inline style to the h2 element
     titleElement.style.fontWeight = "bold";
