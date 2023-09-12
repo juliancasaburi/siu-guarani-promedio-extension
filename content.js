@@ -170,17 +170,16 @@ function extractAndCalculateScores() {
             .then((response) =>
               response.json().then((data) => {
                 optionalsPassedExamsCount = parseOptionalSubjects(data.cont);
-
-                // Including Optional Subjects in the calculation could potentially result in a percentage greater than 100 (There can be more optionals with exams than the required credits).
-                completionPercentage = Math.min(
-                  100,
+                // Including every optional subject in the calculation could potentially result in a percentage greater than 100 (There can be more optionals with exams than the required credits).
+                optionalsPassedExamsCount = Math.min(parseSubjectsResult.optativasRequired, optionalsPassedExamsCount); // Workaround
+                completionPercentage = 
                   ((parseSubjectsResult.passedExamsCount +
                     optionalsPassedExamsCount) /
                     (parseSubjectsResult.passedExamsCount +
                       parseSubjectsResult.withoutExamCount +
                       parseSubjectsResult.optativasRequired)) *
                     100
-                );
+                ;
                 // Create the progress bar
                 createProgressBar(completionPercentage);
               })
