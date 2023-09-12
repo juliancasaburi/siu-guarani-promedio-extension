@@ -15,12 +15,13 @@ if (kernelContenido) {
   }
 }
 
-// Initialize score arrays
-let scoresWithoutFails = [];
-let scoresWithFails = [];
-
 // Function to extract and calculate exam scores
 function extractAndCalculateScores() {
+
+  // Initialize score arrays
+  let scoresWithoutFails = [];
+  let scoresWithFails = [];
+
   // Extract passed exams from the page content
   extractScores(document.body.innerText, averageScoreWithoutFailsRegex, scoresWithoutFails);
 
