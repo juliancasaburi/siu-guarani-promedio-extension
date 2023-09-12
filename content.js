@@ -190,6 +190,7 @@ function calculateProgressBarAndDisplay() {
 
   degree = document.getElementById("js-dropdown-toggle-carreras");
 
+  // Students enrolled in a single career
   if(!degree){
     degree = document.querySelector(".control-label-carrera");
   }
