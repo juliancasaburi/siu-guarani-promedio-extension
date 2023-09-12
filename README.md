@@ -42,6 +42,10 @@ A partir de ahora, la extensión estará funcionando en tu navegador.
 
 ![image](https://github.com/juliancasaburi/siu-guarani-promedio-extension/assets/48498042/f0efdf67-e036-4be2-bd41-78a1da5d07db)
 
+### Estudiantes de UNLP Informática
+Adicionalmente, podrás ver tu progreso en la propuesta si sos estudiante de alguna de las carreras de la Facultad de Informática de la Universidad Nacional de La Plata.
+
+![progressBar-gif](https://github.com/juliancasaburi/siu-guarani-promedio-extension/assets/48498042/d91074a6-f337-48ce-99c9-b568a76eac88)
 
 # 📟 Cálculo de los promedios
 El cálculo de los promedios se realiza basado en la siguiente documentación:
