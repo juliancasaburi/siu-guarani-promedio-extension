@@ -122,16 +122,17 @@ function extractAndCalculateScores() {
   const unlpInfoDegrees = [
     "Licenciatura en Sistemas",
     "Licenciatura en Informática",
-    "Licenciatura en Informatica",
     "Ingeniería en Computación",
     "Analista Programador Universitario",
     "Analista en Tecnologías de la Información y la Comunicación",
     "ATIC",
   ];
+
   degree = document.getElementById("js-dropdown-toggle-carreras");
+
   if (
     unlpInfoDegrees.some(
-      (x) => x.toLowerCase() === degree.textContent.toLowerCase().trim()
+      (x) => removeDiacritics(x.toLowerCase()) === removeDiacritics(degree.textContent.toLowerCase().trim())
     )
   ) {
     const baseUrl = window.location.origin; // Get the current browser URL as the base URL
@@ -171,15 +172,17 @@ function extractAndCalculateScores() {
               response.json().then((data) => {
                 optionalsPassedExamsCount = parseOptionalSubjects(data.cont);
                 // Including every optional subject in the calculation could potentially result in a percentage greater than 100 (There can be more optionals with exams than the required credits).
-                optionalsPassedExamsCount = Math.min(parseSubjectsResult.optativasRequired, optionalsPassedExamsCount); // Workaround
-                completionPercentage = 
+                optionalsPassedExamsCount = Math.min(
+                  parseSubjectsResult.optativasRequired,
+                  optionalsPassedExamsCount
+                ); // Workaround
+                completionPercentage =
                   ((parseSubjectsResult.passedExamsCount +
                     optionalsPassedExamsCount) /
                     (parseSubjectsResult.passedExamsCount +
                       parseSubjectsResult.withoutExamCount +
                       parseSubjectsResult.optativasRequired)) *
-                    100
-                ;
+                  100;
                 // Create the progress bar
                 createProgressBar(completionPercentage);
               })
@@ -468,4 +471,8 @@ function getFirstDigit(number) {
     // If it's positive, return the first character (the first digit)
     return parseInt(numberStr[0]);
   }
+}
+
+function removeDiacritics(text) {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
