@@ -8,12 +8,8 @@ const kernelContenido = document.getElementById("kernel_contenido");
 const observer = new MutationObserver(handleKernelContenidoChange);
 if (kernelContenido) {
   observer.observe(kernelContenido, { childList: true, subtree: true });
-
   // Also, check if the "catedras" elements are already present when the page loads
-  let catedras = document.getElementsByClassName("catedras");
-  if (catedras.length > 0) {
-    extractAndCalculateScores();
-  }
+  handleKernelContenidoChange();
 }
 
 // Function to be called when the "kernel_contenido" div changes
@@ -21,12 +17,14 @@ function handleKernelContenidoChange() {
   // check if the "catedras" elements are present
   let catedras = document.getElementsByClassName("catedras");
   if (catedras.length > 0) {
-    extractAndCalculateScores();
+    observer.disconnect();
+    calculateScoresAndDisplay();
+    calculateProgressBarAndDisplay()
   }
 }
 
 // Function to extract and calculate exam scores
-function extractAndCalculateScores() {
+function calculateScoresAndDisplay() {
   // Initialize score arrays
   let scoresWithoutFails = [];
   let scoresWithFails = [];
@@ -94,7 +92,6 @@ function extractAndCalculateScores() {
     var parentOfListadoDiv = listadoDiv.parentElement;
 
     // Insert the new div before the "listadoDiv" div
-    observer.disconnect();
     parentOfListadoDiv.insertBefore(averagesDiv, listadoDiv);
   }
 
@@ -117,7 +114,63 @@ function extractAndCalculateScores() {
     averageScoreWithoutFails: averageScoreWithoutFails,
   });
   chrome.storage.local.set({ averageScoreWithFails: averageScoreWithFails });
+}
 
+// Function to extract scores from the page content and store them in the specified array
+function extractScores(content, regex, scoresArray) {
+  const matches = content.match(regex);
+  if (matches) {
+    for (const match of matches) {
+      const score = parseInt(match.match(/\d+/)[0]);
+      scoresArray.push(score);
+    }
+  }
+}
+
+// Function to calculate the average of an array of scores
+function calculateAverage(scoresArray) {
+  const totalScores = scoresArray.reduce((sum, score) => sum + score, 0);
+  return scoresArray.length > 0 ? totalScores / scoresArray.length : 0;
+}
+
+// Function to update or create an averageDiv
+function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
+  // Find the existing averageDiv by its ID
+  let averageDiv = document.getElementById(divId);
+
+  if (!averageDiv) {
+    // Create a new div element for the average score
+    averageDiv = document.createElement("div");
+    averageDiv.id = divId;
+    averageDiv.classList.add("catedra");
+
+    // Create an h3 element with the class "titulo-corte" and set its text content
+    const h3Element = document.createElement("h3");
+    h3Element.style.display = "inline";
+    h3Element.textContent = prefix + average.toFixed(2);
+
+    h3Element.classList.add("titulo-corte");
+
+    // Set the backgroundColor if provided
+    if (backgroundColor) {
+      h3Element.style.backgroundColor = backgroundColor;
+    }
+
+    // Append the h3 element to the newAverageDiv
+    averageDiv.appendChild(h3Element);
+
+    // Find the div with ID "averagesDiv"
+    const averagesDiv = document.getElementById("averagesDiv");
+
+    // Append the new "averageDiv" to "averagesDiv"
+    if (averagesDiv) {
+      averagesDiv.appendChild(averageDiv);
+    }
+  }
+}
+
+// Function to add the career completion progress bar
+function calculateProgressBarAndDisplay() {
   // Add the career completion progress bar (At the moment, it is only enabled for UNLP Informática)
   const unlpInfoDegrees = [
     "Licenciatura en Sistemas",
@@ -132,7 +185,9 @@ function extractAndCalculateScores() {
 
   if (
     unlpInfoDegrees.some(
-      (x) => removeDiacritics(x.toLowerCase()) === removeDiacritics(degree.textContent.toLowerCase().trim())
+      (x) =>
+        removeDiacritics(x.toLowerCase()) ===
+        removeDiacritics(degree.textContent.toLowerCase().trim())
     )
   ) {
     const baseUrl = window.location.origin; // Get the current browser URL as the base URL
@@ -204,59 +259,6 @@ function extractAndCalculateScores() {
       .catch((error) => {
         console.error("Error:", error);
       });
-  }
-}
-
-// Function to extract scores from the page content and store them in the specified array
-function extractScores(content, regex, scoresArray) {
-  const matches = content.match(regex);
-  if (matches) {
-    for (const match of matches) {
-      const score = parseInt(match.match(/\d+/)[0]);
-      scoresArray.push(score);
-    }
-  }
-}
-
-// Function to calculate the average of an array of scores
-function calculateAverage(scoresArray) {
-  const totalScores = scoresArray.reduce((sum, score) => sum + score, 0);
-  return scoresArray.length > 0 ? totalScores / scoresArray.length : 0;
-}
-
-// Function to update or create an averageDiv
-function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
-  // Find the existing averageDiv by its ID
-  let averageDiv = document.getElementById(divId);
-
-  if (!averageDiv) {
-    // Create a new div element for the average score
-    averageDiv = document.createElement("div");
-    averageDiv.id = divId;
-    averageDiv.classList.add("catedra");
-
-    // Create an h3 element with the class "titulo-corte" and set its text content
-    const h3Element = document.createElement("h3");
-    h3Element.style.display = "inline";
-    h3Element.textContent = prefix + average.toFixed(2);
-
-    h3Element.classList.add("titulo-corte");
-
-    // Set the backgroundColor if provided
-    if (backgroundColor) {
-      h3Element.style.backgroundColor = backgroundColor;
-    }
-
-    // Append the h3 element to the newAverageDiv
-    averageDiv.appendChild(h3Element);
-
-    // Find the div with ID "averagesDiv"
-    const averagesDiv = document.getElementById("averagesDiv");
-
-    // Append the new "averageDiv" to "averagesDiv"
-    if (averagesDiv) {
-      averagesDiv.appendChild(averageDiv);
-    }
   }
 }
 
@@ -474,5 +476,5 @@ function getFirstDigit(number) {
 }
 
 function removeDiacritics(text) {
-  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
