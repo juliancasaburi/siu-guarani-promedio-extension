@@ -7,7 +7,7 @@ const averageScoreWithFailsRegex = /(\d+) \(([^)]+)\) (Desaprobado|Reprobado)/g;
 const kernelContenido = document.getElementById("kernel_contenido");
 const observer = new MutationObserver(handleKernelContenidoChange);
 if (kernelContenido) {
-  observer.observe(kernelContenido, { childList: true, subtree: true });
+  observeKernelContenido();
   // Also, check if the "catedras" elements are already present when the page loads
   handleKernelContenidoChange();
 }
@@ -21,6 +21,13 @@ function handleKernelContenidoChange() {
     calculateScoresAndDisplay();
     calculateProgressBarAndDisplay()
   }
+}
+
+function observeKernelContenido(){
+  observer.observe(document.getElementById("kernel_contenido"), {
+    childList: true,
+    subtree: true,
+  });
 }
 
 // Function to extract and calculate exam scores
@@ -183,7 +190,11 @@ function calculateProgressBarAndDisplay() {
 
   degree = document.getElementById("js-dropdown-toggle-carreras");
 
-  if (
+  if(!degree){
+    degree = document.querySelector(".control-label-carrera");
+  }
+
+  if (degree &&
     unlpInfoDegrees.some(
       (x) =>
         removeDiacritics(x.toLowerCase()) ===
@@ -249,16 +260,15 @@ function calculateProgressBarAndDisplay() {
               );
             })
             .finally(() => {
-              observer.observe(document.getElementById("kernel_contenido"), {
-                childList: true,
-                subtree: true,
-              });
+              observeKernelContenido();
             });
         }
       })
       .catch((error) => {
         console.error("Error:", error);
       });
+  } else {
+    observeKernelContenido();
   }
 }
 
