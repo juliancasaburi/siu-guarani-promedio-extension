@@ -118,75 +118,91 @@ function extractAndCalculateScores() {
   });
   chrome.storage.local.set({ averageScoreWithFails: averageScoreWithFails });
 
-  // Add the career completion progress bar
-  const baseUrl = window.location.origin; // Get the current browser URL as the base URL
-  const url = `${baseUrl}/plan_estudio/`; // Define the URL to fetch
-  fetchHTML(url) // Fetch the HTML content and extract data
-    .then((html) => {
-      const parseSubjectsResult = parseSubjects(html);
-      let optionalsPassedExamsCount = 0;
-      let completionPercentage = 0;
+  // Add the career completion progress bar (At the moment, it is only enabled for UNLP Informática)
+  const unlpInfoDegrees = [
+    "Licenciatura en Sistemas",
+    "Licenciatura en Informática",
+    "Licenciatura en Informatica",
+    "Ingeniería en Computación",
+    "Analista Programador Universitario",
+    "Analista en Tecnologías de la Información y la Comunicación",
+    "ATIC",
+  ];
+  degree = document.getElementById("js-dropdown-toggle-carreras");
+  if (
+    unlpInfoDegrees.some(
+      (x) => x.toLowerCase() === degree.textContent.toLowerCase().trim()
+    )
+  ) {
+    const baseUrl = window.location.origin; // Get the current browser URL as the base URL
+    const url = `${baseUrl}/plan_estudio/`; // Define the URL to fetch
+    fetchHTML(url) // Fetch the HTML content and extract data
+      .then((html) => {
+        const parseSubjectsResult = parseSubjects(html);
+        let optionalsPassedExamsCount = 0;
+        let completionPercentage = 0;
 
-      // Perform the second fetch
-      const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
+        // Perform the second fetch
+        const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
 
-      const options = {
-        headers: {
-          accept: "application/json, text/javascript, */*; q=0.01",
-          "accept-language":
-            "es-AR,es;q=0.9,es-419;q=0.8,en;q=0.7,pt;q=0.6,gl;q=0.5,ru;q=0.4",
-          "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-          "sec-ch-ua":
-            '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": '"Windows"',
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-          "x-requested-with": "XMLHttpRequest",
-        },
-        body: `elemento=${parseSubjectsResult.idOptativas}`,
-        method: "POST",
-      };
+        const options = {
+          headers: {
+            accept: "application/json, text/javascript, */*; q=0.01",
+            "accept-language":
+              "es-AR,es;q=0.9,es-419;q=0.8,en;q=0.7,pt;q=0.6,gl;q=0.5,ru;q=0.4",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "sec-ch-ua":
+              '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest",
+          },
+          body: `elemento=${parseSubjectsResult.idOptativas}`,
+          method: "POST",
+        };
 
-      if (parseSubjectsResult.idOptativas) {
-        // Perform the fetch operation
-        fetch(optativasUrl, options)
-          .then((response) =>
-            response.json().then((data) => {
-              optionalsPassedExamsCount = parseOptionalSubjects(data.cont);
+        if (parseSubjectsResult.idOptativas) {
+          // Perform the fetch operation
+          fetch(optativasUrl, options)
+            .then((response) =>
+              response.json().then((data) => {
+                optionalsPassedExamsCount = parseOptionalSubjects(data.cont);
 
-              // Including Optional Subjects in the calculation could potentially result in a percentage greater than 100 (There can be more optionals with exams than the required credits).
-              completionPercentage = Math.min(
-                100,
-                ((parseSubjectsResult.passedExamsCount +
-                  optionalsPassedExamsCount) /
-                  (parseSubjectsResult.passedExamsCount +
-                    parseSubjectsResult.withoutExamCount +
-                    parseSubjectsResult.optativasRequired)) *
-                  100
+                // Including Optional Subjects in the calculation could potentially result in a percentage greater than 100 (There can be more optionals with exams than the required credits).
+                completionPercentage = Math.min(
+                  100,
+                  ((parseSubjectsResult.passedExamsCount +
+                    optionalsPassedExamsCount) /
+                    (parseSubjectsResult.passedExamsCount +
+                      parseSubjectsResult.withoutExamCount +
+                      parseSubjectsResult.optativasRequired)) *
+                    100
+                );
+                // Create the progress bar
+                createProgressBar(completionPercentage);
+              })
+            )
+            .catch((error) => {
+              console.error(
+                "There was a problem with the fetch operation:",
+                error
               );
-              // Create the progress bar
-              createProgressBar(completionPercentage);
             })
-          )
-          .catch((error) => {
-            console.error(
-              "There was a problem with the fetch operation:",
-              error
-            );
-          })
-          .finally(() => {
-            observer.observe(document.getElementById("kernel_contenido"), {
-              childList: true,
-              subtree: true,
+            .finally(() => {
+              observer.observe(document.getElementById("kernel_contenido"), {
+                childList: true,
+                subtree: true,
+              });
             });
-          });
-      }
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 }
 
 // Function to extract scores from the page content and store them in the specified array
