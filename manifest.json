@@ -14,10 +14,10 @@
   "content_scripts": [
     {
       "matches": ["*://*.edu.ar/*"],
-      "js": ["content.js"]
+      "js": ["content/content.js", "content/helpers.js"]
     }
   ],
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup/popup.html"
   }
 }

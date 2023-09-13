@@ -7,7 +7,7 @@ const averageScoreWithFailsRegex = /(\d+) \(([^)]+)\) (Desaprobado|Reprobado)/g;
 const kernelContenido = document.getElementById("kernel_contenido");
 const observer = new MutationObserver(handleKernelContenidoChange);
 if (kernelContenido) {
-  observeKernelContenido();
+  observer.observe(kernelContenido, { childList: true, subtree: true });
   // Also, check if the "catedras" elements are already present when the page loads
   handleKernelContenidoChange();
 }
@@ -19,11 +19,11 @@ function handleKernelContenidoChange() {
   if (catedras.length > 0) {
     observer.disconnect();
     calculateScoresAndDisplay();
-    calculateProgressBarAndDisplay()
+    calculateProgressBarAndDisplay();
   }
 }
 
-function observeKernelContenido(){
+function observeKernelContenido() {
   observer.observe(document.getElementById("kernel_contenido"), {
     childList: true,
     subtree: true,
@@ -179,23 +179,11 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
 // Function to add the career completion progress bar
 function calculateProgressBarAndDisplay() {
   // Add the career completion progress bar (At the moment, it is only enabled for UNLP Informática)
-  const unlpInfoDegrees = [
-    "Licenciatura en Sistemas",
-    "Licenciatura en Informática",
-    "Ingeniería en Computación",
-    "Analista Programador Universitario",
-    "Analista en Tecnologías de la Información y la Comunicación",
-    "ATIC",
-  ];
+  const degree = getStudentDegree(document);
+  const unlpInfoDegrees = getUNLPInfoDegrees();
 
-  degree = document.getElementById("js-dropdown-toggle-carreras");
-
-  // Students enrolled in a single career
-  if(!degree){
-    degree = document.querySelector(".control-label-carrera");
-  }
-
-  if (degree &&
+  if (
+    degree &&
     unlpInfoDegrees.some(
       (x) =>
         removeDiacritics(x.toLowerCase()) ===
@@ -204,6 +192,7 @@ function calculateProgressBarAndDisplay() {
   ) {
     const baseUrl = window.location.origin; // Get the current browser URL as the base URL
     const url = `${baseUrl}/plan_estudio/`; // Define the URL to fetch
+
     fetchHTML(url) // Fetch the HTML content and extract data
       .then((html) => {
         const parseSubjectsResult = parseSubjects(html);
@@ -313,73 +302,27 @@ function createProgressBar(progress) {
 }
 
 // Function to extract the data from the HTML content
-function parseSubjects(html) {
+function parseSubjects(htmlContent) {
   // Extract the HTML content within the script tag
-  var startIndex = html.indexOf('content":"') + 'content":"'.length;
-  var endIndex = html.lastIndexOf('"});');
-  var htmlContent = html.substring(startIndex, endIndex);
+  var startIndex = htmlContent.indexOf('content":"') + 'content":"'.length;
+  var endIndex = htmlContent.lastIndexOf('"});');
+  var htmlContent = htmlContent.substring(startIndex, endIndex);
 
   // Replace escaped HTML tags
   htmlContent = htmlContent.replace(/<\\\//g, "</");
   // Replace &quot; with regular double quotes in the HTML content
   var htmlContent = htmlContent.replace(/&quot;/g, '"').replace(/\\"/g, "");
 
-  // Create a DOM parser and parse the HTML
-  var parser = new DOMParser();
-  var doc = parser.parseFromString(htmlContent, "text/html");
+  // DOMParser
+  const doc = getDOMParser(htmlContent);
 
-  // Step 2: Select the tables within the HTML content
+  // Get and parse HTML Tables
   const tables = doc.querySelectorAll("table");
-
-  // Initialize values
-  let trsWithExamenCount = 0;
-  let trsWithoutExamenCount = 0;
-  let idOptativas = 0;
-  let optativasRequired = 0;
-
-  // Step 3: Loop through each table
-  tables.forEach((table, tableIndex) => {
-    const tbody = table.querySelector("tbody");
-    if (!tbody) return; // Skip tables without tbody
-
-    // Check if any td within this tbody contains "propuesta"
-    const hasPropuesta = [...tbody.querySelectorAll("td")].some((td) =>
-      td.textContent.trim().toLowerCase().includes("propuesta")
-    );
-
-    if (hasPropuesta) {
-      // Skip this tbody
-      return;
-    }
-
-    const trs = tbody.querySelectorAll("tr");
-
-    trs.forEach((tr) => {
-      if (tr.classList.contains("materia")) {
-        const tds = tr.querySelectorAll("td");
-        let hasExamen = false;
-
-        tds.forEach((td) => {
-          const text = td.textContent.trim();
-          if (text === "Examen" || text === "Promocion") {
-            hasExamen = true;
-          }
-        });
-
-        if (hasExamen) {
-          trsWithExamenCount++;
-        } else {
-          trsWithoutExamenCount++;
-        }
-      }
-    });
-  });
-
-  // Find the button with text "Verificar"
-  // Get all button elements on the page
-  var buttons = doc.querySelectorAll("button");
+  const examCounts = parseSubjectTables(tables);
 
   // Iterate through the buttons to find the one with the text "Verificar"
+  var buttons = doc.querySelectorAll("button");
+  
   for (var i = 0; i < buttons.length; i++) {
     if (buttons[i].textContent.trim() === "Verificar") {
       // Found the button with the text "Verificar"
@@ -399,26 +342,33 @@ function parseSubjects(html) {
   }
 
   return {
-    passedExamsCount: trsWithExamenCount,
-    withoutExamCount: trsWithoutExamenCount,
+    passedExamsCount: examCounts.trsWithExamenCount,
+    withoutExamCount: examCounts.trsWithoutExamenCount,
     idOptativas,
     optativasRequired,
   };
 }
 
 // Function to extract the data from the Optional Subjects
-function parseOptionalSubjects(html) {
-  // Initialize values
-  let trsWithExamenCount = 0;
+function parseOptionalSubjects(htmlContent) {
+  // DOMParser
+  const doc = getDOMParser(htmlContent);
 
-  // Create a DOM parser and parse the HTML
-  var parser = new DOMParser();
-  var doc = parser.parseFromString(html, "text/html");
-
-  // Step 2: Select the tables within the HTML content
+  // Get HTML Tables
   const tables = doc.querySelectorAll("table");
 
-  // Step 3: Loop through each table
+  // Parse tables
+  const examCounts = parseSubjectTables(tables);
+
+  return examCounts.trsWithExamenCount;
+}
+
+function parseSubjectTables(tables) {
+  // Initialize values
+  let trsWithExamenCount = 0;
+  let trsWithoutExamenCount = 0;
+
+  // Loop through each table
   tables.forEach((table, tableIndex) => {
     const tbody = table.querySelector("tbody");
     if (!tbody) return; // Skip tables without tbody
@@ -446,46 +396,17 @@ function parseOptionalSubjects(html) {
             hasExamen = true;
           }
         });
-
         if (hasExamen) {
           trsWithExamenCount++;
+        } else {
+          trsWithoutExamenCount++;
         }
       }
     });
   });
 
-  return trsWithExamenCount;
-}
-
-// Function to fetch the HTML content
-async function fetchHTML(url) {
-  try {
-    const response = await fetch(url, { redirect: "error" });
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    const html = await response.text();
-    return html;
-  } catch (error) {
-    console.error("Error fetching HTML:", error);
-    throw error;
-  }
-}
-
-function getFirstDigit(number) {
-  // Convert the number to a string
-  let numberStr = number.toString();
-
-  // Check if the number is negative
-  if (numberStr[0] === "-") {
-    // If it's negative, return the second character (the first digit)
-    return parseInt(numberStr[1]);
-  } else {
-    // If it's positive, return the first character (the first digit)
-    return parseInt(numberStr[0]);
-  }
-}
-
-function removeDiacritics(text) {
-  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return {
+    trsWithExamenCount,
+    trsWithoutExamenCount,
+  };
 }
