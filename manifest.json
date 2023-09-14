@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SIU Guaraní Promedio",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "homepage_url": "https://github.com/juliancasaburi/siu-guarani-promedio-extension",
   "description": "Visualizar de manera sencilla el promedio de tus calificaciones en la Historia Académica de SIU Guaraní.",
   "author": {
