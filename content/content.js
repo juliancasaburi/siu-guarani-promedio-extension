@@ -373,36 +373,25 @@ function parseSubjectTables(tables) {
 
   // Loop through each table
   tables.forEach((table, tableIndex) => {
-    const tbody = table.querySelector("tbody");
-    if (!tbody) return; // Skip tables without tbody
-
-    // Check if any td within this tbody contains "propuesta"
-    const hasPropuesta = [...tbody.querySelectorAll("td")].some((td) =>
-      td.textContent.trim().toLowerCase().includes("propuesta")
-    );
-
-    if (hasPropuesta) {
-      // Skip this tbody
-      return;
-    }
-
-    const trs = tbody.querySelectorAll("tr");
+    const trs = table.querySelectorAll("tr.materia");
 
     trs.forEach((tr) => {
-      if (tr.classList.contains("materia")) {
-        const tds = tr.querySelectorAll("td");
-        let hasExamen = false;
-        tds.forEach((td) => {
-          const text = td.textContent.trim();
-          if (studyPlanPassedSubjectsRegex.test(text)) {
-            hasExamen = true;
-          }
-        });
-        if (hasExamen) {
-          trsWithExamenCount++;
-        } else {
-          trsWithoutExamenCount++;
+      const tds = tr.querySelectorAll("td");
+      let hasExamen = false;
+      
+      tds.forEach((td) => {
+        const text = td.textContent.trim();
+        if (studyPlanPassedSubjectsRegex.test(text)) {
+          hasExamen = true;
+          // If a match is found, exit the loop early
+          return;
         }
+      });
+
+      if (hasExamen) {
+        trsWithExamenCount++;
+      } else {
+        trsWithoutExamenCount++;
       }
     });
   });
