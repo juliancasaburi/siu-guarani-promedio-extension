@@ -14,7 +14,8 @@
   "content_scripts": [
     {
       "matches": ["*://*.edu.ar/*"],
-      "js": ["content/content.js", "content/helpers.js"]
+      "js": ["content/content.js", "content/helpers.js"],
+      "css": ["content/content.css"]
     }
   ],
   "action": {
