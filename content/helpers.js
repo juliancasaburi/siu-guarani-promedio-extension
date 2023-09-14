@@ -1,4 +1,10 @@
-// Function to fetch the HTML content
+/**
+ * Fetches HTML content from a given URL.
+ *
+ * @param {string} url - The URL from which to fetch the HTML content.
+ * @returns {Promise<string>} A promise that resolves with the fetched HTML content.
+ * @throws {Error} If there is a network error or if the response status is not OK.
+ */
 async function fetchHTML(url) {
   try {
     const response = await fetch(url, { redirect: "error" });
@@ -13,6 +19,12 @@ async function fetchHTML(url) {
   }
 }
 
+/**
+ * Retrieves the first digit of a given number.
+ *
+ * @param {number} number - The number from which to extract the first digit.
+ * @returns {number} The first digit of the given number.
+ */
 function getFirstDigit(number) {
   // Convert the number to a string
   let numberStr = number.toString();
@@ -27,16 +39,34 @@ function getFirstDigit(number) {
   }
 }
 
+/**
+ * Removes diacritics (accented characters) from a given text.
+ *
+ * @param {string} text - The text from which diacritics will be removed.
+ * @returns {string} The text with diacritics removed.
+ */
 function removeDiacritics(text) {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+/**
+ * Creates a DOM parser and parses HTML content into a DOM document.
+ *
+ * @param {string} htmlContent - The HTML content to parse.
+ * @returns {Document} A DOM document representing the parsed HTML.
+ */
 function getDOMParser(htmlContent) {
   // Create a DOM parser and parse the HTML
   var parser = new DOMParser();
   return parser.parseFromString(htmlContent, "text/html");
 }
 
+/**
+ * Retrieves the student's degree element from the document.
+ *
+ * @param {Document} document - The document object representing the web page.
+ * @returns {HTMLElement | null} The student's degree element or null if not found.
+ */
 function getStudentDegree(document) {
   const degreeById = document.getElementById("js-dropdown-toggle-carreras");
 
@@ -49,6 +79,11 @@ function getStudentDegree(document) {
   }
 }
 
+/**
+ * Retrieves a list of degrees offered by UNLP Informática.
+ *
+ * @returns {string[]} An array of degree names.
+ */
 function getUNLPInfoDegrees(){
     return [
         "Licenciatura en Sistemas",

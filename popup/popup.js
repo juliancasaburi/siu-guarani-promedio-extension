@@ -1,3 +1,6 @@
+/**
+ * Updates the extension popup page with average scores from Chrome local storage.
+ */
 function updatePopup() {
   chrome.storage.local.get(['averageScoreWithoutFails', 'averageScoreWithFails'], function (data) {
     if(data.averageScoreWithoutFails && data.averageScoreWithFails){
@@ -26,8 +29,10 @@ function updatePopup() {
   });
 }
 
+// When the DOM content is fully loaded, call the 'updatePopup' function
 document.addEventListener('DOMContentLoaded', updatePopup);
 
+// Add a click event listener to the 'instructions' element
 document.addEventListener("DOMContentLoaded", function () {
   var link = document.getElementById("instructions");
   link.addEventListener("click", function (event) {
