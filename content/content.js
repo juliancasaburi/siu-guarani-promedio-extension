@@ -322,7 +322,7 @@ function parseSubjects(htmlContent) {
 
   // Iterate through the buttons to find the one with the text "Verificar"
   var buttons = doc.querySelectorAll("button");
-  
+
   for (var i = 0; i < buttons.length; i++) {
     if (buttons[i].textContent.trim() === "Verificar") {
       // Found the button with the text "Verificar"
@@ -364,6 +364,9 @@ function parseOptionalSubjects(htmlContent) {
 }
 
 function parseSubjectTables(tables) {
+  // Subjects regex
+  const studyPlanPassedSubjectsRegex = /^\d+\s?\(Aprobado\)$/;
+
   // Initialize values
   let trsWithExamenCount = 0;
   let trsWithoutExamenCount = 0;
@@ -389,10 +392,9 @@ function parseSubjectTables(tables) {
       if (tr.classList.contains("materia")) {
         const tds = tr.querySelectorAll("td");
         let hasExamen = false;
-
         tds.forEach((td) => {
           const text = td.textContent.trim();
-          if (text === "Examen" || text === "Promocion") {
+          if (studyPlanPassedSubjectsRegex.test(text)) {
             hasExamen = true;
           }
         });
