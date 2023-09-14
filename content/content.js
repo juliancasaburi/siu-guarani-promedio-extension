@@ -113,7 +113,14 @@ function calculateScoresAndDisplay() {
   chrome.storage.local.set({ averageScoreWithFails: averageScoreWithFails });
 }
 
-// Function to extract scores from the page content and store them in the specified array
+/**
+ * Extracts scores from the provided content using the given regular expression
+ * and stores them in the specified array.
+ *
+ * @param {string} content - The content to search for scores.
+ * @param {RegExp} regex - The regular expression used to identify scores in the content.
+ * @param {any[]} scoresArray - The array where extracted scores will be stored.
+ */
 function extractScores(content, regex, scoresArray) {
   const matches = content.match(regex);
   if (matches) {
@@ -124,13 +131,25 @@ function extractScores(content, regex, scoresArray) {
   }
 }
 
-// Function to calculate the average of an array of scores
+/** 
+ * Calculates the average of an array of scores.
+ *
+ * @param {number[]} scoresArray - An array containing numeric scores to be averaged.
+ * @returns {number} The calculated average of the scores or 0 if the array is empty.
+ */
 function calculateAverage(scoresArray) {
   const totalScores = scoresArray.reduce((sum, score) => sum + score, 0);
   return scoresArray.length > 0 ? totalScores / scoresArray.length : 0;
 }
 
-// Function to update or create an averageDiv
+/**
+ * Updates or creates a div to display averages.
+ *
+ * @param {string} divId - The ID for the div element.
+ * @param {string} prefix - The prefix text to display before the average.
+ * @param {number} average - The average score to display.
+ * @param {string} backgroundColor - The background color of the average display element (optional).
+ */
 function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
   // Find the existing averageDiv by its ID
   let averageDiv = document.getElementById(divId);
@@ -165,12 +184,15 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
   }
 }
 
-// Function to add the career completion progress bar
+/**
+ * Adds a career completion progress bar.
+ * This function is currently enabled for UNLP Informática degrees.
+ */
 function calculateProgressBarAndDisplay() {
-  // Add the career completion progress bar (At the moment, it is only enabled for UNLP Informática)
   const degree = getStudentDegree(document);
   const unlpInfoDegrees = getUNLPInfoDegrees();
 
+  // At the moment, it is only enabled for UNLP Informática degrees.
   if (
     degree &&
     unlpInfoDegrees.some(
@@ -182,36 +204,36 @@ function calculateProgressBarAndDisplay() {
     const baseUrl = window.location.origin; // Get the current browser URL as the base URL
     const url = `${baseUrl}/plan_estudio/`; // Define the URL to fetch
 
-    fetchHTML(url) // Fetch the HTML content and extract data
+    // Fetch the HTML content and extract data
+    fetchHTML(url)
       .then((html) => {
         const parseSubjectsResult = parseSubjects(html);
         let optionalsPassedExamsCount = 0;
         let completionPercentage = 0;
 
-        // Perform the second fetch
-        const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
-
-        const options = {
-          headers: {
-            accept: "application/json, text/javascript, */*; q=0.01",
-            "accept-language":
-              "es-AR,es;q=0.9,es-419;q=0.8,en;q=0.7,pt;q=0.6,gl;q=0.5,ru;q=0.4",
-            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "sec-ch-ua":
-              '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "x-requested-with": "XMLHttpRequest",
-          },
-          body: `elemento=${parseSubjectsResult.idOptativas}`,
-          method: "POST",
-        };
-
         if (parseSubjectsResult.idOptativas) {
-          // Perform the fetch operation
+          // Setup the fetch
+          const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
+          const options = {
+            headers: {
+              accept: "application/json, text/javascript, */*; q=0.01",
+              "accept-language":
+                "es-AR,es;q=0.9,es-419;q=0.8,en;q=0.7,pt;q=0.6,gl;q=0.5,ru;q=0.4",
+              "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+              "sec-ch-ua":
+                '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": '"Windows"',
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "same-origin",
+              "x-requested-with": "XMLHttpRequest",
+            },
+            body: `elemento=${parseSubjectsResult.idOptativas}`,
+            method: "POST",
+          };
+
+          // Perform the fetch operation for optional subjects
           fetch(optativasUrl, options)
             .then((response) =>
               response.json().then((data) => {
@@ -251,8 +273,13 @@ function calculateProgressBarAndDisplay() {
   }
 }
 
+/**
+ * Creates and displays a progress bar.
+ *
+ * @param {number} progress - The percentage of completion for the progress bar.
+ */
 function createProgressBar(progress) {
-  // Create a div
+  // Create a div element for the progress bar container
   const divElement = document.createElement("div");
   divElement.classList.add("titulo_operacion");
 
@@ -269,8 +296,8 @@ function createProgressBar(progress) {
   const progressBar = document.createElement("div");
   progressBar.id = "progress-bar";
   progressBar.classList.add("progressbar");
-  progressBar.textContent = progress.toFixed(2) + "%";
-  progressBar.style.width = `${Math.max(5, progress)}%`;
+  progressBar.textContent = progress.toFixed(2) + "%"; // Display progress percentage
+  progressBar.style.width = `${Math.max(5, progress)}%`; // Set the width of the progress bar
 
   // Append the labelElement to divElement
   divElement.appendChild(labelElement);
@@ -286,7 +313,12 @@ function createProgressBar(progress) {
   }
 }
 
-// Function to extract the data from the HTML content
+/**
+ * Extracts and parses data from HTML content.
+ *
+ * @param {string} htmlContent - The HTML content to parse.
+ * @returns {object} An object containing extracted data.
+ */
 function parseSubjects(htmlContent) {
   // Extract the HTML content within the script tag
   var startIndex = htmlContent.indexOf('content":"') + 'content":"'.length;
@@ -298,7 +330,7 @@ function parseSubjects(htmlContent) {
   // Replace &quot; with regular double quotes in the HTML content
   var htmlContent = htmlContent.replace(/&quot;/g, '"').replace(/\\"/g, "");
 
-  // DOMParser
+  // Create a DOMParser instance to parse the HTML content
   const doc = getDOMParser(htmlContent);
 
   // Get and parse HTML Tables
@@ -336,7 +368,7 @@ function parseSubjects(htmlContent) {
 
 // Function to extract the data from the Optional Subjects
 function parseOptionalSubjects(htmlContent) {
-  // DOMParser
+  // Create a DOMParser instance to parse the HTML content
   const doc = getDOMParser(htmlContent);
 
   // Get HTML Tables
@@ -348,6 +380,12 @@ function parseOptionalSubjects(htmlContent) {
   return examCounts.trsWithExamenCount;
 }
 
+/**
+ * Extracts and parses data from optional subjects HTML content.
+ *
+ * @param {string} htmlContent - The HTML content of optional subjects to parse.
+ * @returns {number} The count of optional subjects with exams.
+ */
 function parseSubjectTables(tables) {
   // Subjects regex
   const studyPlanPassedSubjectsRegex = /^\d+\s?\(Aprobado\)$/;
