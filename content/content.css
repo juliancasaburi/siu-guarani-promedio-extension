@@ -1,0 +1,34 @@
+.averages {
+  background-color: #f1f0f5;
+  border: 4px;
+  border-radius: 24px;
+  padding: 20px 20px; /* Corrected padding values */
+  margin: 20px 20px; /* Corrected margin values */
+  text-align: center;
+}
+
+h2.averages-title {
+    font-weight: bold;
+}
+
+.progressbar-container {
+  height: 20px;
+  background-color: grey;
+  width: 100%;
+  border-radius: 10px;
+  display: flex;
+}
+
+.progressbar {
+  height: 100%;
+  background-color: green;
+  border-radius: 10px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+}
+
+.progressbar-label {
+  font-weight: bold;
+  padding: 10px 0;
+}

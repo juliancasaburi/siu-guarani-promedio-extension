@@ -63,17 +63,13 @@ function calculateScoresAndDisplay() {
     // Set the id attribute
     averagesDiv.id = "averagesDiv";
 
-    // Set the inline styles for the new div
-    averagesDiv.className = "titulo_operacion";
-    averagesDiv.style.backgroundColor = "#f1f0f5"; // White background
-    averagesDiv.style.border = "4px";
-    averagesDiv.style.borderRadius = "24px";
-    averagesDiv.style.padding = "20px 20px";
-    averagesDiv.style.margin = "20px 20px";
-    averagesDiv.style.textAlign = "center";
+    // Add class for styling
+    averagesDiv.classList.add("averages");
 
-    // Create a new h2 element for the title
+    // Create a new h2 element for the title and append it to the averagesDiv
     var titleElement = document.createElement("h2");
+    titleElement.className = "averages-title";
+    averagesDiv.appendChild(titleElement);
 
     // Create an anchor element
     var linkElement = document.createElement("a");
@@ -83,14 +79,8 @@ function calculateScoresAndDisplay() {
     // Set the text content for the anchor element (the title)
     linkElement.textContent = "Extensión SIU Guaraní Promedio";
 
-    // Apply an inline style to the h2 element
-    titleElement.style.fontWeight = "bold";
-
     // Append the anchor element to the title element
     titleElement.appendChild(linkElement);
-
-    // Append the title element to the averagesDiv
-    averagesDiv.appendChild(titleElement);
 
     // Get the div with id "listado"
     var listadoDiv = document.getElementById("listado");
@@ -155,7 +145,6 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
     const h3Element = document.createElement("h3");
     h3Element.style.display = "inline";
     h3Element.textContent = prefix + average.toFixed(2);
-
     h3Element.classList.add("titulo-corte");
 
     // Set the backgroundColor if provided
@@ -263,41 +252,37 @@ function calculateProgressBarAndDisplay() {
 }
 
 function createProgressBar(progress) {
+  // Create a div
+  const divElement = document.createElement("div");
+  divElement.classList.add("titulo_operacion");
+
   // Create a label for the progress bar
   const labelElement = document.createElement("h2");
   labelElement.textContent = "Porcentaje completado de la propuesta"; // Set the text content
-  labelElement.style.fontWeight = "bold"; // Make the label bold
-  labelElement.style.padding = "10px 0"; // Add padding to the label
+  labelElement.classList.add("progressbar-label");
 
   // Create the progress bar container
   const progressBarContainer = document.createElement("div");
-  progressBarContainer.style.height = "20px"; // Set the height of the progress bar container to 20px
-  progressBarContainer.style.backgroundColor = "grey"; // Set a grey background color for the container
-  progressBarContainer.style.width = "100%"; // Set the initial width to 100% to cover the grey background
-  progressBarContainer.style.borderRadius = "10px"; // Add rounded corners to the container
-  progressBarContainer.style.display = "flex"; // Use flexbox to center-align vertically
+  progressBarContainer.classList.add("progressbar-container");
 
   // Create the progress bar itself
   const progressBar = document.createElement("div");
   progressBar.id = "progress-bar";
-  progressBar.style.height = "100%"; // Set the height of the progress bar to 100% to fill the container
-  progressBar.style.backgroundColor = "green"; // Set a green color for the filled part of the progress bar
-  progressBar.style.width = "0%"; // Initial width
-  progressBar.style.borderRadius = "10px"; // Add rounded corners to the progress bar
-  progressBar.style.fontWeight = "bold"; // Make the text bold
-  progressBar.style.color = "#fff"; // Set the text color to white for better contrast
-  progressBar.style.textAlign = "center";
+  progressBar.classList.add("progressbar");
   progressBar.textContent = progress.toFixed(2) + "%";
   progressBar.style.width = `${Math.max(5, progress)}%`;
 
+  // Append the labelElement to divElement
+  divElement.appendChild(labelElement);
   // Append the progress bar to the container
   progressBarContainer.appendChild(progressBar);
+  // Append the progressBarContainer to divElement
+  divElement.appendChild(progressBarContainer);
 
   // Find the div with ID averagesDiv and append the label and progress bar container to it
   const averagesDiv = document.getElementById("averagesDiv");
   if (averagesDiv) {
-    averagesDiv.appendChild(labelElement);
-    averagesDiv.appendChild(progressBarContainer);
+    averagesDiv.appendChild(divElement);
   }
 }
 
@@ -378,7 +363,7 @@ function parseSubjectTables(tables) {
     trs.forEach((tr) => {
       const tds = tr.querySelectorAll("td");
       let hasExamen = false;
-      
+
       tds.forEach((td) => {
         const text = td.textContent.trim();
         if (studyPlanPassedSubjectsRegex.test(text)) {
