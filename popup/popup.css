@@ -87,6 +87,10 @@ body {
     color: #ccc; /* Text color inside the rounded background in dark theme */
   }
 
+  .popup-container h2#instructions a {
+    color: #1E90FF;
+  }
+
   .github-link a {
     color: #1E90FF; /* Light blue link color in dark mode */
   }
