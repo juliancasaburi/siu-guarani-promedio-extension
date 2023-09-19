@@ -214,27 +214,9 @@ function calculateProgressBarAndDisplay() {
         if (parseSubjectsResult.idOptativas) {
           // Setup the fetch
           const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
-          const options = {
-            headers: {
-              accept: "application/json, text/javascript, */*; q=0.01",
-              "accept-language":
-                "es-AR,es;q=0.9,es-419;q=0.8,en;q=0.7,pt;q=0.6,gl;q=0.5,ru;q=0.4",
-              "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-              "sec-ch-ua":
-                '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-              "sec-ch-ua-mobile": "?0",
-              "sec-ch-ua-platform": '"Windows"',
-              "sec-fetch-dest": "empty",
-              "sec-fetch-mode": "cors",
-              "sec-fetch-site": "same-origin",
-              "x-requested-with": "XMLHttpRequest",
-            },
-            body: `elemento=${parseSubjectsResult.idOptativas}`,
-            method: "POST",
-          };
 
           // Perform the fetch operation for optional subjects
-          fetch(optativasUrl, options)
+          fetch(optativasUrl, getOptativasOptions(idOptativas))
             .then((response) =>
               response.json().then((data) => {
                 optionalsPassedExamsCount = parseOptionalSubjects(data.cont);
