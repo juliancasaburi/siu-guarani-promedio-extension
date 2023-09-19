@@ -84,13 +84,39 @@ function getStudentDegree(document) {
  *
  * @returns {string[]} An array of degree names.
  */
-function getUNLPInfoDegrees(){
-    return [
-        "Licenciatura en Sistemas",
-        "Licenciatura en Informática",
-        "Ingeniería en Computación",
-        "Analista Programador Universitario",
-        "Analista en Tecnologías de la Información y la Comunicación",
-        "ATIC",
-      ];
+function getUNLPInfoDegrees() {
+  return [
+    "Licenciatura en Sistemas",
+    "Licenciatura en Informática",
+    "Ingeniería en Computación",
+    "Analista Programador Universitario",
+    "Analista en Tecnologías de la Información y la Comunicación",
+    "ATIC",
+  ];
+}
+
+/**
+ * Constructs and returns options for making a POST request to retrieve optional subjects.
+ *
+ * @param {string} idOptativas - The ID of the optativas element to retrieve.
+ * @returns {Object} - An object containing the HTTP request options.
+ */
+function getOptativasOptions(idOptativas) {
+  // Define the headers for the request
+  const headers = {
+    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+  };
+
+  // Create the request body with the provided idOptativas
+  const body = `elemento=${idOptativas}`;
+
+  // Define the HTTP method as POST
+  const method = "POST";
+
+  // Construct and return the options object
+  return {
+    headers,
+    body,
+    method,
+  };
 }
