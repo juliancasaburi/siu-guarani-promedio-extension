@@ -186,7 +186,7 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
 
 /**
  * Adds a career completion progress bar.
- * This function is currently enabled for UNLP Informática degrees.
+ * This feature is currently enabled for UNLP Informática degrees.
  */
 function calculateProgressBarAndDisplay() {
   const degree = getStudentDegree(document);
