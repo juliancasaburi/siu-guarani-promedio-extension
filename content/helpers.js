@@ -84,7 +84,7 @@ function getStudentDegree(document) {
  *
  * @returns {string[]} An array of degree names.
  */
-function getUNLPInfoDegrees() {
+function getUNLPInformaticaDegrees() {
   return [
     "Licenciatura en Sistemas",
     "Licenciatura en Informática",
@@ -101,7 +101,7 @@ function getUNLPInfoDegrees() {
  * @param {string} idOptativas - The ID of the optativas element to retrieve.
  * @returns {Object} - An object containing the HTTP request options.
  */
-function getOptativasOptions(idOptativas) {
+function getOptativasFetchOptions(idOptativas) {
   // Define the headers for the request
   const headers = {
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",

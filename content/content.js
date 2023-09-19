@@ -18,8 +18,8 @@ function handleKernelContenidoChange() {
   let catedras = document.getElementsByClassName("catedras");
   if (catedras.length > 0) {
     observer.disconnect();
-    calculateScoresAndDisplay();
-    calculateProgressBarAndDisplay();
+    calculateScoresAndDisplayAverages();
+    calculateAndDisplayProgressBar();
   }
 }
 
@@ -30,8 +30,8 @@ function observeKernelContenido() {
   });
 }
 
-// Function to extract and calculate exam scores
-function calculateScoresAndDisplay() {
+// Function to calculate exam scores and display averages
+function calculateScoresAndDisplayAverages() {
   // Initialize score arrays
   let scoresWithoutFails = [];
   let scoresWithFails = [];
@@ -188,14 +188,14 @@ function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
  * Adds a career completion progress bar.
  * This feature is currently enabled for UNLP Informática degrees.
  */
-function calculateProgressBarAndDisplay() {
+function calculateAndDisplayProgressBar() {
   const degree = getStudentDegree(document);
-  const unlpInfoDegrees = getUNLPInfoDegrees();
+  const unlpInformaticaDegrees = getUNLPInformaticaDegrees();
 
   // At the moment, it is only enabled for UNLP Informática degrees.
   if (
     degree &&
-    unlpInfoDegrees.some(
+    unlpInformaticaDegrees.some(
       (x) =>
         removeDiacritics(x.toLowerCase()) ===
         removeDiacritics(degree.textContent.toLowerCase().trim())
@@ -216,7 +216,7 @@ function calculateProgressBarAndDisplay() {
           const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
 
           // Perform the fetch operation for optional subjects
-          fetch(optativasUrl, getOptativasOptions(idOptativas))
+          fetch(optativasUrl, getOptativasFetchOptions(idOptativas))
             .then((response) =>
               response.json().then((data) => {
                 optionalsPassedExamsCount = parseOptionalSubjects(data.cont);
