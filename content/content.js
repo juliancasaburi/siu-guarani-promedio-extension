@@ -16,7 +16,7 @@ if (kernelContenido) {
 function handleKernelContenidoChange() {
   // check if the "catedras" elements are present
   let catedras = document.getElementsByClassName("catedras");
-  if (catedras.length > 0) {
+  if (catedras.length > 0 && !document.getElementById("averagesDiv")) {
     observer.disconnect();
     calculateScoresAndDisplayAverages();
     calculateAndDisplayProgressBar();
