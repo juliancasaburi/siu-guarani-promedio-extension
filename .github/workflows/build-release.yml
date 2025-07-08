@@ -1,0 +1,110 @@
+name: Build and Release Cross-Browser Extension
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a release with current version'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for tags
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build extensions
+      run: npm run package
+      
+    - name: Get version from package.json
+      id: version
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        echo "version=v$VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: v$VERSION"
+        
+    - name: Check if tag exists
+      id: tag_check
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        TAG="v$VERSION"
+        echo "Checking if tag $TAG exists..."
+        
+        # Fetch all tags to ensure we have the latest
+        git fetch --tags
+        
+        if git tag -l | grep -q "^$TAG$"; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "Tag $TAG already exists"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "Tag $TAG does not exist"
+        fi
+        
+    - name: Upload Chromium extension
+      uses: actions/upload-artifact@v4
+      with:
+        name: siu-guarani-promedio-chromium
+        path: dist/siu-guarani-promedio-chromium.zip
+        
+    - name: Upload Firefox extension
+      uses: actions/upload-artifact@v4
+      with:
+        name: siu-guarani-promedio-firefox
+        path: dist/siu-guarani-promedio-firefox.zip
+        
+    - name: Create Release (Auto on Main)
+      if: github.ref == 'refs/heads/main' && steps.tag_check.outputs.exists == 'false'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        name: Release ${{ steps.version.outputs.version }}
+        files: |
+          dist/siu-guarani-promedio-chromium.zip
+          dist/siu-guarani-promedio-firefox.zip
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create Release (Manual/Tag)
+      if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release)
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || steps.version.outputs.version }}
+        name: ${{ startsWith(github.ref, 'refs/tags/') && format('Release {0}', github.ref_name) || format('Release {0}', steps.version.outputs.version) }}
+        files: |
+          dist/siu-guarani-promedio-chromium.zip
+          dist/siu-guarani-promedio-firefox.zip
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Skip Release (Duplicate Version)
+      if: github.ref == 'refs/heads/main' && steps.tag_check.outputs.exists == 'true'
+      run: |
+        echo "⚠️ Release ${{ steps.version.outputs.version }} already exists. Skipping release creation."
+        echo "To create a new release, update the version in package.json"

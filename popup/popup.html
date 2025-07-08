@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIU Guaraní Promedio</title>
   <link rel="stylesheet" type="text/css" href="popup.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -9,18 +10,19 @@
 <body>
   <div class="popup-container">
     <h1>SIU Guaraní Promedio</h1>
-    <h2 id="noData">Sin datos <i class="fas fa-arrow-down"></i></h2>
-    <h2 id="instructions">
-      <a href="/historia_academica">
-        Ir a Reportes → Historia Académica → Historia completa
-      </a>
-    </h2>
+    <div class="info-box">
+      <h2 id="noData">
+      <div style="text-align: center;">Sin datos</div>
+      <div style="text-align: center; font-size: 0.9em;">Ir a Reportes → Historia Académica → Historia completa</div>
+      </h2>
+    </div>
     <div class="github-link">
       <a href="https://github.com/juliancasaburi/siu-guarani-promedio-extension" target="_blank">
         <i class="fab fa-github"></i> GitHub Repo
       </a>
     </div>
   </div>
+  <script src="webextension-polyfill/dist/browser-polyfill.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

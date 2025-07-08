@@ -6,10 +6,11 @@ body {
   padding: 0;
   font-family: 'Roboto', sans-serif;
   background-color: #f5f5f5; /* Light gray background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  width: 320px;
+  max-width: 320px;
+  min-height: 160px;
+  max-height: 500px;
+  overflow: hidden;
 }
 
 /* Style the container */
@@ -18,31 +19,56 @@ body {
   background-color: #ffffff; /* White background */
   border-radius: 8px; /* Rounded corners */
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-  padding: 20px;
+  padding: 12px;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Style the h1 */
 .popup-container h1 {
   color: #333; /* Dark gray text */
-  font-size: 28px;
-  margin-bottom: 10px;
+  font-size: 20px;
+  margin: 0 0 12px 0;
+  font-weight: 600;
 }
 
 /* Style the h2 elements */
 .popup-container h2 {
-  font-size: 18px;
+  font-size: 14px;
   color: #666; /* Gray text */
-  margin-top: 10px;
-  border-radius: 10px; /* Rounded background */
+  margin: 8px 0;
+  border-radius: 8px; /* Rounded background */
   padding: 8px 12px; /* Padding inside the rounded background */
   background-color: #f3f3f3; /* Background color for h2 elements */
   color: #000000; /* Text color inside the rounded background */
+  line-height: 1.3;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Compact instruction text */
+.popup-container h2#instructions {
+  font-size: 12px;
+  padding: 6px 8px;
+  line-height: 1.2;
+}
+
+.popup-container h2#instructions a {
+  display: block;
+  text-decoration: none;
+  color: #0066cc;
+  font-weight: 500;
+}
+
+.popup-container h2#instructions a:hover {
+  color: #004499;
+  text-decoration: underline;
 }
 
 /* Style the GitHub link */
 .github-link {
-  margin-top: 20px;
+  margin-top: 12px;
 }
 
 .github-link a {
@@ -60,6 +86,42 @@ body {
   font-size: 24px;
   margin-right: 8px;
   color: #0078D4; /* Blue icon color */
+}
+
+/* Score container styles */
+.score-container {
+  margin: 8px 0;
+}
+
+/* Percentage bar styles */
+.percentage-bar-container {
+  margin: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.percentage-bar-background {
+  flex: 1;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.percentage-bar-progress {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.percentage-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: #666;
+  min-width: 30px;
+  text-align: right;
 }
 
 /* Dark theme styles when dark mode is enabled */
@@ -93,5 +155,14 @@ body {
 
   .github-link a {
     color: #1E90FF; /* Light blue link color in dark mode */
+  }
+
+  /* Dark theme styles for percentage bars */
+  .percentage-bar-background {
+    background-color: #333;
+  }
+
+  .percentage-text {
+    color: #ccc;
   }
 }

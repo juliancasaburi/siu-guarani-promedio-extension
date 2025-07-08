@@ -22,21 +22,26 @@ async function fetchHTML(url) {
 /**
  * Retrieves the first digit of a given number.
  *
- * @param {number} number - The number from which to extract the first digit.
+ * @param {number|string} number - The number from which to extract the first digit.
  * @returns {number} The first digit of the given number.
+ * @throws {Error} If the input is not a valid number or has no digits.
  */
 function getFirstDigit(number) {
   // Convert the number to a string
   let numberStr = number.toString();
 
-  // Check if the number is negative
-  if (numberStr[0] === "-") {
-    // If it's negative, return the second character (the first digit)
-    return parseInt(numberStr[1]);
-  } else {
-    // If it's positive, return the first character (the first digit)
-    return parseInt(numberStr[0]);
+  // Check if the string is empty or doesn't contain digits
+  if (!numberStr || !/\d/.test(numberStr)) {
+    throw new Error("Input must contain at least one digit");
   }
+
+  // Find the first digit in the string
+  const firstDigitMatch = numberStr.match(/\d/);
+  if (firstDigitMatch) {
+    return parseInt(firstDigitMatch[0]);
+  }
+  
+  throw new Error("No digit found in input");
 }
 
 /**

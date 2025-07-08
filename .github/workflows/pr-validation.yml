@@ -1,0 +1,82 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    # Only run for PRs from maintainers (members with write access)
+    if: github.event.pull_request.author_association == 'OWNER' || github.event.pull_request.author_association == 'MEMBER' || github.event.pull_request.author_association == 'COLLABORATOR'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Lint and validate code
+      run: |
+        # Add any linting steps here if you have them
+        echo "Running validation checks..."
+        
+    - name: Build extensions
+      run: npm run package
+      
+    - name: Verify Chromium build
+      run: |
+        if [ ! -f "dist/siu-guarani-promedio-chromium.zip" ]; then
+          echo "❌ Chrome build failed - ZIP file not found"
+          exit 1
+        fi
+        echo "✅ Chrome build successful"
+        
+    - name: Verify Firefox build
+      run: |
+        if [ ! -f "dist/siu-guarani-promedio-firefox.zip" ]; then
+          echo "❌ Firefox build failed - ZIP file not found"
+          exit 1
+        fi
+        echo "✅ Firefox build successful"
+        
+    - name: Upload Chrome extension artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: pr-${{ github.event.number }}-chrome
+        path: dist/siu-guarani-promedio-chromium.zip
+        retention-days: 30
+        
+    - name: Upload Firefox extension artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: pr-${{ github.event.number }}-firefox
+        path: dist/siu-guarani-promedio-firefox.zip
+        retention-days: 30
+
+  # This job will be required for merge
+  build-status:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: always()
+    
+    steps:
+    - name: Check build status
+      run: |
+        if [ "${{ needs.validate.result }}" == "success" ]; then
+          echo "✅ All builds passed - PR is ready for merge"
+        else
+          echo "❌ Build validation failed - PR cannot be merged"
+          exit 1
+        fi

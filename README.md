@@ -1,39 +1,58 @@
 # Extensión Promedio en Historia Académica de SIU Guaraní
 
-Esta extensión te permite visualizar de manera sencilla el promedio de tus calificaciones en la Historia Académica de SIU Guaraní, el sistema de gestión académica.
+Esta extensión te permite visualizar de manera sencilla el promedio de tus calificaciones en la Historia Académica de SIU Guaraní.
 
 # 💻 Navegadores compatibles
-Esta extensión es compatible con los navegadores basados en Chromium, lo que incluye:
+Esta extensión es compatible con los siguientes navegadores:
 
+## Chrome/Basados en Chromium
 - `Google Chrome`
 - `Brave`
 - `Microsoft Edge`
 - `Opera`
+- Otros navegadores basados en Chromium
+
+## Basados en Firefox
+
+- [`Waterfox`](https://github.com/WaterfoxCo/Waterfox)
+- [`Floorp`](https://github.com/Floorp-Projects/Floorp)
+- Otros navegadores basados en Firefox que permiten la instalación de extensiones no verificadas
 
 # 🛠️ Instalación
-Este es un proceso sencillo que implica cargar la extensión en el navegador desde una carpeta local en tu computadora:
 
-1. Descargar la extensión y extraerla en una carpeta. Puedes encontrarla en [https://github.com/juliancasaburi/siu-guarani-promedio-extension/releases](https://github.com/juliancasaburi/siu-guarani-promedio-extension/releases).
+## Para Chrome/Basados en Chromium
+1. Descargar `siu-guarani-promedio-chromium.zip` desde [Releases](https://github.com/juliancasaburi/siu-guarani-promedio-extension/releases) y **extraerla en una carpeta**.
 
 2. En el navegador abre la página de **Extensiones**:
-   - En Google Chrome, visita [chrome://extensions/](chrome://extensions/).
-   - En Microsoft Edge, visita [edge://extensions/](edge://extensions/).
-   - En Brave, visita [brave://extensions/](brave://extensions/).
-   - En Opera, visita [opera://extensions/](opera://extensions/).
+   - En Google Chrome, visita [chrome://extensions/](chrome://extensions/)
+   - En Microsoft Edge, visita [edge://extensions/](edge://extensions/)
+   - En Brave, visita [brave://extensions/](brave://extensions/)
+   - En Opera, visita [opera://extensions/](opera://extensions/)
 
 3. Habilita el **Modo de desarrollador**.
 
 4. Selecciona **Cargar extensión sin empaquetar / Carga desempaquetada**.
 
-   Aparecerá un cuadro de diálogo para que selecciones la carpeta de la extensión. Busca y selecciona la carpeta que contiene los archivos de la extensión y luego haz clic en "Seleccionar carpeta".
+   Aparecerá un cuadro de diálogo para que selecciones la carpeta de la extensión. Busca y selecciona **la carpeta extraída** que contiene los archivos de la extensión y luego haz clic en "Seleccionar carpeta".
 
-5. **Comprueba la instalación**:
+La extensión aparecerá en la lista de extensiones instaladas y podrás gestionarla desde esta interfaz. A partir de ahora, la extensión estará funcionando en tu navegador.
 
-   La extensión debería aparecer en la lista de extensiones instaladas.
+![Chromium Extension](https://github.com/user-attachments/assets/c0bbb30a-90fc-4740-8bc5-138737d59335)
 
-   ![image](https://github.com/juliancasaburi/siu-guarani-promedio-extension/assets/48498042/961056ee-a92a-46f6-a3cd-6455a2918071)
+## Para derivados de Firefox
+1. Descargar `siu-guarani-promedio-firefox.zip` desde [Releases](https://github.com/juliancasaburi/siu-guarani-promedio-extension/releases) (**no extraer**).
 
-A partir de ahora, la extensión estará funcionando en tu navegador.
+2. En el navegador, abre la página de **Complementos** visitando [about:addons](about:addons).
+
+3. Haz clic en el ícono de engranaje y selecciona **Instalar complemento desde archivo...**.
+
+4. Aparecerá un cuadro de diálogo para que selecciones el archivo de la extensión. Busca y selecciona **el archivo ZIP** `siu-guarani-promedio-firefox.zip` que descargaste (sin extraer) y haz clic en "Abrir".
+
+5. Confirma la instalación cuando se te solicite.
+  
+7. La extensión aparecerá en la lista de complementos instalados y podrás gestionarla desde esta interfaz. A partir de ahora, la extensión estará funcionando en tu navegador.
+
+![Firefox Extension](https://github.com/user-attachments/assets/db548583-a54b-4b50-a45a-71d1a9371fb2)
 
 # 📖 Uso
 1. Inicia sesión en `SIU Guaraní`.
@@ -60,3 +79,36 @@ Este proyecto es de código abierto, y está abierto a contribuciones de la comu
 - Esta extensión se ofrece "tal cual" y no está afiliada ni respaldada por SIU Guaraní.
 
 - Su funcionamiento puede estar sujeto a cambios en la página web de SIU Guaraní.
+
+# 🔧 Desarrollo
+
+## Requisitos
+- Node.js 18+
+- npm
+
+## Configuración del entorno de desarrollo
+```bash
+# Clona el repositorio
+git clone https://github.com/juliancasaburi/siu-guarani-promedio-extension.git
+cd siu-guarani-promedio-extension
+
+# Instala las dependencias
+npm install
+
+# Desarrollo - Construye las extensiones para ambos navegadores
+npm run build
+
+# O construye para un navegador específico
+npm run build:chrome    # Solo Chrome/Chromium
+npm run build:firefox   # Solo Firefox
+
+# Empaqueta todo (limpia, construye y crea ZIPs)
+npm run package
+
+# O empaqueta solo un navegador específico
+npm run package:chrome
+npm run package:firefox
+
+# Para releases - proceso completo con validación
+npm run release
+```

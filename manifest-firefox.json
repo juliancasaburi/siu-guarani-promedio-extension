@@ -1,0 +1,44 @@
+{
+  "manifest_version": 2,
+  "name": "SIU Guaraní Promedio",
+  "version": "2.0.0",
+  "homepage_url": "https://github.com/juliancasaburi/siu-guarani-promedio-extension",
+  "description": "Visualiza de manera sencilla el promedio de tus calificaciones en la Historia Académica de SIU Guaraní.",
+  "author": "juliancasaburi@gmail.com",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "content_security_policy": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;",
+  "content_scripts": [
+    {
+      "matches": ["*://*.edu.ar/*"],
+      "js": ["webextension-polyfill/dist/browser-polyfill.min.js", "content/content.js", "content/helpers.js"],
+      "css": ["content/content.css"]
+    }
+  ],
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "siu-guarani-promedio@juliancasaburi.github.io",
+      "strict_min_version": "42.0"
+    }
+  },
+  "web_accessible_resources": [
+    "webextension-polyfill/dist/browser-polyfill.min.js"
+  ]
+}

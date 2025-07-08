@@ -1,0 +1,32 @@
+{
+  "name": "siu-guarani-promedio-extension",
+  "version": "2.0.0",
+  "description": "Cross-browser extension for SIU Guaraní grade averages",
+  "scripts": {
+    "install-deps": "npm install",
+    "clean": "rimraf dist",
+    "build": "npm run build:chrome && npm run build:firefox",
+    "build:chrome": "node scripts/build-chrome.js",
+    "build:firefox": "node scripts/build-firefox.js",
+    "zip": "node scripts/zip-builds.js",
+    "package": "npm run clean && npm run build && npm run zip",
+    "package:chrome": "npm run build:chrome && node scripts/zip-builds.js",
+    "package:firefox": "npm run build:firefox && node scripts/zip-builds.js",
+    "dev": "npm run clean && npm run build",
+    "release": "npm run package && echo 'Release packages ready in dist/'"
+  },
+  "dependencies": {
+    "webextension-polyfill": "^0.10.0"
+  },
+  "devDependencies": {
+    "archiver": "^6.0.1",
+    "fs-extra": "^11.1.1",
+    "rimraf": "^5.0.5"
+  },
+  "author": "juliancasaburi@gmail.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juliancasaburi/siu-guarani-promedio-extension.git"
+  }
+}
