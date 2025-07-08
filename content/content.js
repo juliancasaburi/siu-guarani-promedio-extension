@@ -1,299 +1,348 @@
-// Define regular expressions to match scores
-const averageScoreWithoutFailsRegex =
-  /(\d+) \(([^)]+)\) (Aprobado|Promocionado)/g;
-const averageScoreWithFailsRegex = /(\d+) \(([^)]+)\) (Desaprobado|Reprobado)/g;
+// ================================
+// CONSTANTS AND CONFIGURATION
+// ================================
 
-// Create a MutationObserver to watch for changes in the "kernel_contenido" div
-const kernelContenido = document.getElementById("kernel_contenido");
-const observer = new MutationObserver(handleKernelContenidoChange);
-if (kernelContenido) {
-  observer.observe(kernelContenido, { childList: true, subtree: true });
-  // Also, check if the "catedras" elements are already present when the page loads
-  handleKernelContenidoChange();
-}
+const REGEX_PATTERNS = {
+  PASSED_SCORES: /(\d+) \(([^)]+)\) (Aprobado|Promocionado)/g,
+  FAILED_SCORES: /(\d+) \(([^)]+)\) (Desaprobado|Reprobado)/g,
+  STUDY_PLAN_PASSED: /^\d+\s?\(Aprobado\)$/
+};
 
-// Function to be called when the "kernel_contenido" div changes
-function handleKernelContenidoChange() {
-  // check if the "catedras" elements are present
-  let catedras = document.getElementsByClassName("catedras");
-  if (catedras.length > 0 && !document.getElementById("averagesDiv")) {
-    observer.disconnect();
-    calculateScoresAndDisplayAverages();
-    calculateAndDisplayProgressBar();
+const UI_CONSTANTS = {
+  MIN_PROGRESS_BAR_WIDTH: 5,
+  EXTENSION_GITHUB_URL: "https://github.com/juliancasaburi/siu-guarani-promedio-extension/",
+  COLORS: {
+    WITHOUT_FAILS: "teal",
+    WITH_FAILS: "firebrick"
   }
-}
+};
 
-function observeKernelContenido() {
-  observer.observe(document.getElementById("kernel_contenido"), {
-    childList: true,
-    subtree: true,
-  });
-}
+const SELECTORS = {
+  KERNEL_CONTENIDO: "kernel_contenido",
+  CATEDRAS: "catedras",
+  AVERAGES_DIV: "averagesDiv",
+  LISTADO: "listado"
+};
 
-// Function to calculate exam scores and display averages
-function calculateScoresAndDisplayAverages() {
-  // Initialize score arrays
-  let scoresWithoutFails = [];
-  let scoresWithFails = [];
+// ================================
+// MAIN INITIALIZATION
+// ================================
 
-  // Extract passed exams from the page content
-  extractScores(
-    document.body.innerText,
-    averageScoreWithoutFailsRegex,
-    scoresWithoutFails
-  );
+class SIUGuaraniExtension {
+  constructor() {
+    this.observer = null;
+    this.kernelContenido = null;
+    this.init();
+  }
 
-  // Copy the content of scoresWithoutFails to scoresWithFails and add the failed exams
-  scoresWithFails = [...scoresWithoutFails];
-  extractScores(
-    document.body.innerText,
-    averageScoreWithFailsRegex,
-    scoresWithFails
-  );
+  init() {
+    this.kernelContenido = document.getElementById(SELECTORS.KERNEL_CONTENIDO);
+    if (this.kernelContenido) {
+      this.setupObserver();
+      this.handleKernelContenidoChange();
+    }
+  }
 
-  // Calculate the average scores
-  const averageScoreWithoutFails = calculateAverage(scoresWithoutFails);
-  const averageScoreWithFails = calculateAverage(scoresWithFails);
+  setupObserver() {
+    this.observer = new MutationObserver(() => this.handleKernelContenidoChange());
+    this.observer.observe(this.kernelContenido, { childList: true, subtree: true });
+  }
 
-  // Check if the element with id "averagesDiv" doesn't exist
-  if (!document.getElementById("averagesDiv")) {
-    // Create a new div element
-    var averagesDiv = document.createElement("div");
+  handleKernelContenidoChange() {
+    const catedras = document.getElementsByClassName(SELECTORS.CATEDRAS);
+    if (catedras.length > 0 && !document.getElementById(SELECTORS.AVERAGES_DIV)) {
+      this.observer.disconnect();
+      this.calculateAndDisplayAverages();
+      this.calculateAndDisplayProgressBar();
+    }
+  }
 
-    // Set the id attribute
-    averagesDiv.id = "averagesDiv";
+  observeKernelContenido() {
+    if (this.observer && this.kernelContenido) {
+      this.observer.observe(this.kernelContenido, {
+        childList: true,
+        subtree: true,
+      });
+    }
+  }
 
-    // Add class for styling
-    averagesDiv.classList.add("averages");
+  // ================================
+  // SCORE CALCULATION METHODS
+  // ================================
 
-    // Create a new h2 element for the title and append it to the averagesDiv
-    var titleElement = document.createElement("h2");
-    titleElement.className = "averages-title";
+  calculateAndDisplayAverages() {
+    const scoreData = this.extractAllScores();
+    const averages = this.calculateAverages(scoreData);
+    
+    this.createAveragesContainer();
+    this.displayAverages(averages);
+    this.saveAveragesToStorage(averages);
+  }
+
+  extractAllScores() {
+    const pageContent = document.body.innerText;
+    const scoresWithoutFails = this.extractScores(pageContent, REGEX_PATTERNS.PASSED_SCORES);
+    const scoresWithFails = [...scoresWithoutFails, ...this.extractScores(pageContent, REGEX_PATTERNS.FAILED_SCORES)];
+    
+    return { scoresWithoutFails, scoresWithFails };
+  }
+
+  extractScores(content, regex) {
+    const matches = content.match(regex);
+    if (!matches) return [];
+    
+    return matches.map(match => {
+      const scoreMatch = match.match(/\d+/);
+      return scoreMatch ? parseInt(scoreMatch[0]) : 0;
+    }).filter(score => score > 0);
+  }
+
+  calculateAverages({ scoresWithoutFails, scoresWithFails }) {
+    return {
+      withoutFails: this.calculateAverage(scoresWithoutFails),
+      withFails: this.calculateAverage(scoresWithFails)
+    };
+  }
+
+  calculateAverage(scoresArray) {
+    if (scoresArray.length === 0) return 0;
+    const total = scoresArray.reduce((sum, score) => sum + score, 0);
+    return total / scoresArray.length;
+  }
+
+  // ================================
+  // UI CREATION METHODS
+  // ================================
+
+  createAveragesContainer() {
+    if (document.getElementById(SELECTORS.AVERAGES_DIV)) return;
+
+    const averagesDiv = this.createElement('div', {
+      id: SELECTORS.AVERAGES_DIV,
+      className: 'averages'
+    });
+
+    const titleElement = this.createTitleElement();
     averagesDiv.appendChild(titleElement);
 
-    // Create an anchor element
-    var linkElement = document.createElement("a");
-    linkElement.href =
-      "https://github.com/juliancasaburi/siu-guarani-promedio-extension/";
+    this.insertAveragesContainer(averagesDiv);
+  }
 
-    // Set the text content for the anchor element (the title)
-    linkElement.textContent = "Extensión SIU Guaraní Promedio";
-
-    // Append the anchor element to the title element
+  createTitleElement() {
+    const titleElement = this.createElement('h2', { className: 'averages-title' });
+    const linkElement = this.createElement('a', {
+      href: UI_CONSTANTS.EXTENSION_GITHUB_URL,
+      textContent: 'Extensión SIU Guaraní Promedio'
+    });
     titleElement.appendChild(linkElement);
-
-    // Get the div with id "listado"
-    var listadoDiv = document.getElementById("listado");
-
-    // Get the parent of the "listadoDiv" div
-    var parentOfListadoDiv = listadoDiv.parentElement;
-
-    // Insert the new div before the "listadoDiv" div
-    parentOfListadoDiv.insertBefore(averagesDiv, listadoDiv);
+    return titleElement;
   }
 
-  // Create divs and append them to averagesDiv
-  updateOrCreateAverageDiv(
-    "averageWithoutFailsDiv",
-    "Promedio sin aplazos: ",
-    averageScoreWithoutFails,
-    "teal"
-  );
-  updateOrCreateAverageDiv(
-    "averageWithFailsDiv",
-    "Promedio con aplazos: ",
-    averageScoreWithFails,
-    "firebrick"
-  );
-
-  // Save both average scores
-  chrome.storage.local.set({
-    averageScoreWithoutFails: averageScoreWithoutFails,
-  });
-  chrome.storage.local.set({ averageScoreWithFails: averageScoreWithFails });
-}
-
-/**
- * Extracts scores from the provided content using the given regular expression
- * and stores them in the specified array.
- *
- * @param {string} content - The content to search for scores.
- * @param {RegExp} regex - The regular expression used to identify scores in the content.
- * @param {any[]} scoresArray - The array where extracted scores will be stored.
- */
-function extractScores(content, regex, scoresArray) {
-  const matches = content.match(regex);
-  if (matches) {
-    for (const match of matches) {
-      const score = parseInt(match.match(/\d+/)[0]);
-      scoresArray.push(score);
+  insertAveragesContainer(averagesDiv) {
+    const listadoDiv = document.getElementById(SELECTORS.LISTADO);
+    if (listadoDiv && listadoDiv.parentElement) {
+      listadoDiv.parentElement.insertBefore(averagesDiv, listadoDiv);
     }
   }
-}
 
-/** 
- * Calculates the average of an array of scores.
- *
- * @param {number[]} scoresArray - An array containing numeric scores to be averaged.
- * @returns {number} The calculated average of the scores or 0 if the array is empty.
- */
-function calculateAverage(scoresArray) {
-  const totalScores = scoresArray.reduce((sum, score) => sum + score, 0);
-  return scoresArray.length > 0 ? totalScores / scoresArray.length : 0;
-}
+  displayAverages({ withoutFails, withFails }) {
+    this.createAverageDiv(
+      "averageWithoutFailsDiv",
+      "Promedio sin aplazos: ",
+      withoutFails,
+      UI_CONSTANTS.COLORS.WITHOUT_FAILS
+    );
+    this.createAverageDiv(
+      "averageWithFailsDiv",
+      "Promedio con aplazos: ",
+      withFails,
+      UI_CONSTANTS.COLORS.WITH_FAILS
+    );
+  }
 
-/**
- * Updates or creates a div to display averages.
- *
- * @param {string} divId - The ID for the div element.
- * @param {string} prefix - The prefix text to display before the average.
- * @param {number} average - The average score to display.
- * @param {string} backgroundColor - The background color of the average display element (optional).
- */
-function updateOrCreateAverageDiv(divId, prefix, average, backgroundColor) {
-  // Find the existing averageDiv by its ID
-  let averageDiv = document.getElementById(divId);
+  createAverageDiv(divId, prefix, average, backgroundColor) {
+    if (document.getElementById(divId)) return;
 
-  if (!averageDiv) {
-    // Create a new div element for the average score
-    averageDiv = document.createElement("div");
-    averageDiv.id = divId;
-    averageDiv.classList.add("catedra");
+    const averageDiv = this.createElement('div', {
+      id: divId,
+      className: 'catedra'
+    });
 
-    // Create an h3 element with the class "titulo-corte" and set its text content
-    const h3Element = document.createElement("h3");
-    h3Element.style.display = "inline";
-    h3Element.textContent = prefix + average.toFixed(2);
-    h3Element.classList.add("titulo-corte");
+    const h3Element = this.createElement('h3', {
+      className: 'titulo-corte',
+      textContent: prefix + average.toFixed(2),
+      style: {
+        display: 'inline',
+        backgroundColor: backgroundColor
+      }
+    });
 
-    // Set the backgroundColor if provided
-    if (backgroundColor) {
-      h3Element.style.backgroundColor = backgroundColor;
-    }
-
-    // Append the h3 element to the newAverageDiv
     averageDiv.appendChild(h3Element);
 
-    // Find the div with ID "averagesDiv"
-    const averagesDiv = document.getElementById("averagesDiv");
-
-    // Append the new "averageDiv" to "averagesDiv"
+    const averagesDiv = document.getElementById(SELECTORS.AVERAGES_DIV);
     if (averagesDiv) {
       averagesDiv.appendChild(averageDiv);
     }
   }
-}
 
-/**
- * Adds a career completion progress bar.
- * This feature is currently enabled for UNLP Informática degrees.
- */
-function calculateAndDisplayProgressBar() {
-  const degree = getStudentDegree(document);
-  const unlpInformaticaDegrees = getUNLPInformaticaDegrees();
-
-  // At the moment, it is only enabled for UNLP Informática degrees.
-  if (
-    degree &&
-    unlpInformaticaDegrees.some(
-      (x) =>
-        removeDiacritics(x.toLowerCase()) ===
-        removeDiacritics(degree.textContent.toLowerCase().trim())
-    )
-  ) {
-    const baseUrl = window.location.origin; // Get the current browser URL as the base URL
-    const url = `${baseUrl}/plan_estudio/`; // Define the URL to fetch
-
-    // Fetch the HTML content and extract data
-    fetchHTML(url)
-      .then((html) => {
-        const parseSubjectsResult = parseSubjects(html);
-        let optionalsPassedExamsCount = 0;
-        let completionPercentage = 0;
-
-        if (parseSubjectsResult.idOptativas) {
-          // Setup the fetch
-          const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
-
-          // Perform the fetch operation for optional subjects
-          fetch(optativasUrl, getOptativasFetchOptions(idOptativas))
-            .then((response) =>
-              response.json().then((data) => {
-                optionalsPassedExamsCount = parseOptionalSubjects(data.cont);
-                // Including every optional subject in the calculation could potentially result in a percentage greater than 100 (There can be more optionals with exams than the required credits).
-                optionalsPassedExamsCount = Math.min(
-                  parseSubjectsResult.optativasRequired,
-                  optionalsPassedExamsCount
-                ); // Workaround
-                completionPercentage =
-                  ((parseSubjectsResult.passedExamsCount +
-                    optionalsPassedExamsCount) /
-                    (parseSubjectsResult.passedExamsCount +
-                      parseSubjectsResult.withoutExamCount +
-                      parseSubjectsResult.optativasRequired)) *
-                  100;
-                // Create the progress bar
-                createProgressBar(completionPercentage);
-              })
-            )
-            .catch((error) => {
-              console.error(
-                "There was a problem with the fetch operation:",
-                error
-              );
-            })
-            .finally(() => {
-              observeKernelContenido();
-            });
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+  saveAveragesToStorage({ withoutFails, withFails }) {
+    // Small delay to ensure polyfill is loaded, then support both chrome.* and browser.* APIs
+    setTimeout(() => {
+      const storageAPI = (typeof browser !== 'undefined' && browser.storage) ? browser.storage : chrome.storage;
+      
+      storageAPI.local.set({
+        averageScoreWithoutFails: withoutFails,
+        averageScoreWithFails: withFails
       });
-  } else {
-    observeKernelContenido();
+    }, 50);
+  }
+
+  saveCompletionPercentageToStorage(completionPercentage) {
+    ('Saving completion percentage:', completionPercentage + '%'); // Debug log
+    
+    // Small delay to ensure polyfill is loaded, then support both chrome.* and browser.* APIs
+    setTimeout(() => {
+      const storageAPI = (typeof browser !== 'undefined' && browser.storage) ? browser.storage : chrome.storage;
+      
+      storageAPI.local.set({
+        completionPercentage: completionPercentage
+      });
+      
+      ('Completion percentage saved to storage'); // Debug log
+    }, 50);
+  }
+
+  // ================================
+  // PROGRESS BAR METHODS
+  // ================================
+
+  async calculateAndDisplayProgressBar() {
+    try {
+      const degree = getStudentDegree(document);
+      const unlpInformaticaDegrees = getUNLPInformaticaDegrees();
+
+      ('Student degree found:', degree ? degree.textContent.trim() : 'No degree found'); // Debug log
+      ('Supported degrees:', unlpInformaticaDegrees); // Debug log
+
+      if (!this.isValidDegree(degree, unlpInformaticaDegrees)) {
+        ('Degree not supported for progress calculation - skipping progress bar'); // Debug log
+        this.observeKernelContenido();
+        return;
+      }
+
+      ('Degree is supported - calculating progress...'); // Debug log
+      const progressData = await this.fetchProgressData();
+      if (progressData) {
+        ('Progress data calculated:', progressData.completionPercentage + '%'); // Debug log
+        this.createProgressBar(progressData.completionPercentage);
+        this.saveCompletionPercentageToStorage(progressData.completionPercentage);
+      } else {
+        ('No progress data calculated'); // Debug log
+      }
+    } catch (error) {
+      console.error("Error calculating progress:", error);
+    } finally {
+      this.observeKernelContenido();
+    }
+  }
+
+  isValidDegree(degree, unlpInformaticaDegrees) {
+    return degree && unlpInformaticaDegrees.some(degreeOption =>
+      removeDiacritics(degreeOption.toLowerCase()) ===
+      removeDiacritics(degree.textContent.toLowerCase().trim())
+    );
+  }
+
+  async fetchProgressData() {
+    const baseUrl = window.location.origin;
+    const url = `${baseUrl}/plan_estudio/`;
+
+    const html = await fetchHTML(url);
+    const parseSubjectsResult = parseSubjects(html);
+
+    if (!parseSubjectsResult.idOptativas) return null;
+
+    const optativasUrl = `${baseUrl}/plan_estudio/optativas`;
+    const response = await fetch(optativasUrl, getOptativasFetchOptions(parseSubjectsResult.idOptativas));
+    const data = await response.json();
+
+    const optionalsPassedExamsCount = Math.min(
+      parseSubjectsResult.optativasRequired,
+      parseOptionalSubjects(data.cont)
+    );
+
+    const completionPercentage = this.calculateCompletionPercentage(
+      parseSubjectsResult,
+      optionalsPassedExamsCount
+    );
+
+    return { completionPercentage };
+  }
+
+  calculateCompletionPercentage(parseSubjectsResult, optionalsPassedExamsCount) {
+    const totalPassed = parseSubjectsResult.passedExamsCount + optionalsPassedExamsCount;
+    const totalRequired = parseSubjectsResult.passedExamsCount + 
+                         parseSubjectsResult.withoutExamCount + 
+                         parseSubjectsResult.optativasRequired;
+    
+    return (totalPassed / totalRequired) * 100;
+  }
+
+  createProgressBar(progress) {
+    const container = this.createElement('div', { className: 'titulo_operacion' });
+    
+    const label = this.createElement('h2', {
+      textContent: 'Porcentaje completado de la propuesta',
+      className: 'progressbar-label'
+    });
+
+    const progressBarContainer = this.createElement('div', { className: 'progressbar-container' });
+    
+    const progressBar = this.createElement('div', {
+      id: 'progress-bar',
+      className: 'progressbar',
+      textContent: progress.toFixed(2) + '%',
+      style: {
+        width: `${Math.max(UI_CONSTANTS.MIN_PROGRESS_BAR_WIDTH, progress)}%`
+      }
+    });
+
+    container.appendChild(label);
+    progressBarContainer.appendChild(progressBar);
+    container.appendChild(progressBarContainer);
+
+    const averagesDiv = document.getElementById(SELECTORS.AVERAGES_DIV);
+    if (averagesDiv) {
+      averagesDiv.appendChild(container);
+    }
+  }
+
+  // ================================
+  // UTILITY METHODS
+  // ================================
+
+  createElement(tag, options = {}) {
+    const element = document.createElement(tag);
+    
+    Object.entries(options).forEach(([key, value]) => {
+      if (key === 'style' && typeof value === 'object') {
+        Object.assign(element.style, value);
+      } else if (key === 'textContent') {
+        element.textContent = value;
+      } else if (key === 'className') {
+        element.className = value;
+      } else {
+        element[key] = value;
+      }
+    });
+
+    return element;
   }
 }
 
-/**
- * Creates and displays a progress bar.
- *
- * @param {number} progress - The percentage of completion for the progress bar.
- */
-function createProgressBar(progress) {
-  // Create a div element for the progress bar container
-  const divElement = document.createElement("div");
-  divElement.classList.add("titulo_operacion");
-
-  // Create a label for the progress bar
-  const labelElement = document.createElement("h2");
-  labelElement.textContent = "Porcentaje completado de la propuesta"; // Set the text content
-  labelElement.classList.add("progressbar-label");
-
-  // Create the progress bar container
-  const progressBarContainer = document.createElement("div");
-  progressBarContainer.classList.add("progressbar-container");
-
-  // Create the progress bar itself
-  const progressBar = document.createElement("div");
-  progressBar.id = "progress-bar";
-  progressBar.classList.add("progressbar");
-  progressBar.textContent = progress.toFixed(2) + "%"; // Display progress percentage
-  progressBar.style.width = `${Math.max(5, progress)}%`; // Set the width of the progress bar
-
-  // Append the labelElement to divElement
-  divElement.appendChild(labelElement);
-  // Append the progress bar to the container
-  progressBarContainer.appendChild(progressBar);
-  // Append the progressBarContainer to divElement
-  divElement.appendChild(progressBarContainer);
-
-  // Find the div with ID averagesDiv and append the label and progress bar container to it
-  const averagesDiv = document.getElementById("averagesDiv");
-  if (averagesDiv) {
-    averagesDiv.appendChild(divElement);
-  }
-}
+// ================================
+// STANDALONE UTILITY FUNCTIONS
+// ================================
 
 /**
  * Extracts and parses data from HTML content.
@@ -302,40 +351,41 @@ function createProgressBar(progress) {
  * @returns {object} An object containing extracted data.
  */
 function parseSubjects(htmlContent) {
-  // Extract the HTML content within the script tag
-  var startIndex = htmlContent.indexOf('content":"') + 'content":"'.length;
-  var endIndex = htmlContent.lastIndexOf('"});');
-  var htmlContent = htmlContent.substring(startIndex, endIndex);
+  const startIndex = htmlContent.indexOf('content":"');
+  if (startIndex === -1) {
+    throw new Error("Expected content pattern not found");
+  }
+  
+  const contentStart = startIndex + 'content":"'.length;
+  const endIndex = htmlContent.lastIndexOf('"});');
+  if (endIndex === -1) {
+    throw new Error("Expected content end pattern not found");
+  }
+  
+  let parsedHtmlContent = htmlContent.substring(contentStart, endIndex);
 
-  // Replace escaped HTML tags
-  htmlContent = htmlContent.replace(/<\\\//g, "</");
-  // Replace &quot; with regular double quotes in the HTML content
-  var htmlContent = htmlContent.replace(/&quot;/g, '"').replace(/\\"/g, "");
+  // Replace escaped HTML tags and quotes
+  parsedHtmlContent = parsedHtmlContent
+    .replace(/<\\\//g, "</")
+    .replace(/&quot;/g, '"')
+    .replace(/\\"/g, "");
 
-  // Create a DOMParser instance to parse the HTML content
-  const doc = getDOMParser(htmlContent);
-
-  // Get and parse HTML Tables
+  const doc = getDOMParser(parsedHtmlContent);
   const tables = doc.querySelectorAll("table");
   const examCounts = parseSubjectTables(tables);
 
-  // Iterate through the buttons to find the one with the text "Verificar"
-  var buttons = doc.querySelectorAll("button");
+  // Find verification button for optional subjects
+  const buttons = doc.querySelectorAll("button");
+  let idOptativas = null;
+  let optativasRequired = 0;
 
-  for (var i = 0; i < buttons.length; i++) {
-    if (buttons[i].textContent.trim() === "Verificar") {
-      // Found the button with the text "Verificar"
-      var buttonWithTextVerificar = buttons[i];
-
-      // Get the value of the data-materia attribute
-      idOptativas = buttonWithTextVerificar.getAttribute("data-materia");
-
-      // Get the required credits (E.g. 300 for Licenciatura en Sistemas)
-      optativasRequired = getFirstDigit(
-        buttonWithTextVerificar.getAttribute("data-parametros")
-      );
-
-      // Break the loop since we found the button
+  for (const button of buttons) {
+    if (button.textContent.trim() === "Verificar") {
+      idOptativas = button.getAttribute("data-materia");
+      const parametros = button.getAttribute("data-parametros");
+      if (parametros) {
+        optativasRequired = getFirstDigit(parametros);
+      }
       break;
     }
   }
@@ -348,50 +398,43 @@ function parseSubjects(htmlContent) {
   };
 }
 
-// Function to extract the data from the Optional Subjects
-function parseOptionalSubjects(htmlContent) {
-  // Create a DOMParser instance to parse the HTML content
-  const doc = getDOMParser(htmlContent);
-
-  // Get HTML Tables
-  const tables = doc.querySelectorAll("table");
-
-  // Parse tables
-  const examCounts = parseSubjectTables(tables);
-
-  return examCounts.trsWithExamenCount;
-}
-
 /**
  * Extracts and parses data from optional subjects HTML content.
  *
  * @param {string} htmlContent - The HTML content of optional subjects to parse.
  * @returns {number} The count of optional subjects with exams.
  */
-function parseSubjectTables(tables) {
-  // Subjects regex
-  const studyPlanPassedSubjectsRegex = /^\d+\s?\(Aprobado\)$/;
+function parseOptionalSubjects(htmlContent) {
+  const doc = getDOMParser(htmlContent);
+  const tables = doc.querySelectorAll("table");
+  const examCounts = parseSubjectTables(tables);
+  return examCounts.trsWithExamenCount;
+}
 
-  // Initialize values
+/**
+ * Parses subject tables to count passed and pending subjects.
+ *
+ * @param {NodeList} tables - The table elements to parse.
+ * @returns {object} Object containing counts of subjects with and without exams.
+ */
+function parseSubjectTables(tables) {
   let trsWithExamenCount = 0;
   let trsWithoutExamenCount = 0;
 
-  // Loop through each table
-  tables.forEach((table, tableIndex) => {
-    const trs = table.querySelectorAll("tr.materia");
+  tables.forEach((table) => {
+    const rows = table.querySelectorAll("tr.materia");
 
-    trs.forEach((tr) => {
-      const tds = tr.querySelectorAll("td");
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("td");
       let hasExamen = false;
 
-      tds.forEach((td) => {
-        const text = td.textContent.trim();
-        if (studyPlanPassedSubjectsRegex.test(text)) {
+      for (const cell of cells) {
+        const text = cell.textContent.trim();
+        if (REGEX_PATTERNS.STUDY_PLAN_PASSED.test(text)) {
           hasExamen = true;
-          // If a match is found, exit the loop early
-          return;
+          break;
         }
-      });
+      }
 
       if (hasExamen) {
         trsWithExamenCount++;
@@ -401,8 +444,12 @@ function parseSubjectTables(tables) {
     });
   });
 
-  return {
-    trsWithExamenCount,
-    trsWithoutExamenCount,
-  };
+  return { trsWithExamenCount, trsWithoutExamenCount };
 }
+
+// ================================
+// INITIALIZATION
+// ================================
+
+// Initialize the extension when the page loads
+const siuExtension = new SIUGuaraniExtension();

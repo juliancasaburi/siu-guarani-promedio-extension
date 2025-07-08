@@ -7,6 +7,12 @@
   "author": {
     "email": "juliancasaburi@gmail.com"
   },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "permissions": [
     "activeTab",
     "storage"
@@ -14,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.edu.ar/*"],
-      "js": ["content/content.js", "content/helpers.js"],
+      "js": ["webextension-polyfill/dist/browser-polyfill.min.js", "content/content.js", "content/helpers.js"],
       "css": ["content/content.css"]
     }
   ],
@@ -27,10 +33,13 @@
       "128": "icons/icon128.png"
     }
   },
-  "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["webextension-polyfill/dist/browser-polyfill.min.js"],
+      "matches": ["*://*.edu.ar/*"]
+    }
+  ]
 }

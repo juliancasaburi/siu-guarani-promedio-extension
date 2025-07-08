@@ -1,0 +1,74 @@
+name: Manual Build (Testing Only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build (default: current branch)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.branch || github.ref }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build extensions
+      run: npm run package
+      
+    - name: Get version and branch info
+      id: info
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        BRANCH_NAME=${GITHUB_REF#refs/heads/}
+        ARTIFACT_SUFFIX=""
+        
+        if [ "${{ inputs.branch }}" != "" ]; then
+          BRANCH_NAME="${{ inputs.branch }}"
+        fi
+        
+        if [ "$BRANCH_NAME" != "main" ]; then
+          ARTIFACT_SUFFIX="-${BRANCH_NAME}"
+        fi
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "suffix=$ARTIFACT_SUFFIX" >> $GITHUB_OUTPUT
+        
+    - name: Upload Chromium extension
+      uses: actions/upload-artifact@v4
+      with:
+        name: siu-guarani-promedio-chromium${{ steps.info.outputs.suffix }}
+        path: dist/siu-guarani-promedio-chromium.zip
+        retention-days: 7
+        
+    - name: Upload Firefox extension
+      uses: actions/upload-artifact@v4
+      with:
+        name: siu-guarani-promedio-firefox${{ steps.info.outputs.suffix }}
+        path: dist/siu-guarani-promedio-firefox.zip
+        retention-days: 7
+        
+    - name: Build Summary
+      run: |
+        echo "🔨 Build completed successfully!"
+        echo "📦 Version: ${{ steps.info.outputs.version }}"
+        echo "🌿 Branch: ${{ steps.info.outputs.branch }}"
+        echo "📋 Artifacts will be available for 7 days"
+        echo ""
+        echo "💡 To create a release, use the 'Build and Release' workflow instead"
